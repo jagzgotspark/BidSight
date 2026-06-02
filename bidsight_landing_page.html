@@ -1,0 +1,358 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bs-ink:#0D1117;
+  --bs-ink2:#3A4250;
+  --bs-ink3:#7A8394;
+  --bs-surface:#F5F4F0;
+  --bs-white:#FFFFFF;
+  --bs-accent:#1D9E75;
+  --bs-accent-light:#E1F5EE;
+  --bs-accent-mid:#0F6E56;
+  --bs-amber:#BA7517;
+  --bs-amber-light:#FAEEDA;
+  --bs-line:rgba(13,17,23,0.1);
+}
+
+.bs-wrap{font-family:'DM Sans',sans-serif;color:var(--bs-ink);background:var(--bs-white);max-width:700px;padding:0;}
+
+.bs-nav{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-bottom:0.5px solid var(--bs-line);}
+.bs-logo{display:flex;align-items:center;gap:8px;}
+.bs-logo-mark{width:28px;height:28px;background:var(--bs-ink);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.bs-logo-mark svg{width:16px;height:16px;}
+.bs-logo-name{font-size:16px;font-weight:500;letter-spacing:-0.3px;}
+.bs-nav-links{display:flex;gap:1.5rem;font-size:13px;color:var(--bs-ink2);}
+.bs-nav-cta{font-size:13px;font-weight:500;background:var(--bs-ink);color:#fff;padding:6px 16px;border-radius:6px;border:none;cursor:pointer;}
+
+.bs-hero{padding:4rem 2rem 3rem;border-bottom:0.5px solid var(--bs-line);}
+.bs-eyebrow{display:inline-flex;align-items:center;gap:6px;background:var(--bs-accent-light);color:var(--bs-accent-mid);font-size:12px;font-weight:500;padding:4px 12px;border-radius:20px;margin-bottom:1.5rem;letter-spacing:0.2px;}
+.bs-eyebrow-dot{width:6px;height:6px;border-radius:50%;background:var(--bs-accent);}
+.bs-hero h1{font-family:'DM Serif Display',serif;font-size:52px;line-height:1.05;letter-spacing:-1px;color:var(--bs-ink);margin-bottom:1.25rem;max-width:560px;}
+.bs-hero h1 em{font-style:italic;color:var(--bs-accent);}
+.bs-hero-sub{font-size:16px;color:var(--bs-ink2);line-height:1.65;max-width:480px;margin-bottom:2rem;font-weight:300;}
+.bs-hero-ctas{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.bs-btn-primary{background:var(--bs-ink);color:#fff;font-size:14px;font-weight:500;padding:10px 22px;border-radius:7px;border:none;cursor:pointer;font-family:inherit;}
+.bs-btn-secondary{background:transparent;color:var(--bs-ink);font-size:14px;padding:10px 22px;border-radius:7px;border:0.5px solid var(--bs-ink);cursor:pointer;font-family:inherit;}
+.bs-hero-proof{margin-top:2.5rem;display:flex;align-items:center;gap:1.5rem;padding-top:2rem;border-top:0.5px solid var(--bs-line);}
+.bs-proof-stat{text-align:left;}
+.bs-proof-num{font-family:'DM Serif Display',serif;font-size:28px;color:var(--bs-ink);}
+.bs-proof-label{font-size:12px;color:var(--bs-ink3);margin-top:2px;}
+.bs-proof-divider{width:0.5px;height:36px;background:var(--bs-line);}
+
+.bs-ticker{background:var(--bs-surface);padding:0.75rem 2rem;border-bottom:0.5px solid var(--bs-line);overflow:hidden;position:relative;}
+.bs-ticker-inner{display:flex;gap:2rem;font-size:12px;color:var(--bs-ink2);white-space:nowrap;animation:ticker 18s linear infinite;}
+.bs-ticker-item{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.bs-ticker-badge{background:var(--bs-accent-light);color:var(--bs-accent-mid);padding:2px 8px;border-radius:10px;font-size:11px;font-weight:500;}
+.bs-ticker-badge.amber{background:var(--bs-amber-light);color:var(--bs-amber);}
+@keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+.bs-section{padding:2.5rem 2rem;border-bottom:0.5px solid var(--bs-line);}
+.bs-section-label{font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;color:var(--bs-ink3);margin-bottom:1rem;}
+.bs-section h2{font-family:'DM Serif Display',serif;font-size:32px;letter-spacing:-0.5px;margin-bottom:0.5rem;line-height:1.15;}
+.bs-section-sub{font-size:14px;color:var(--bs-ink2);font-weight:300;margin-bottom:2rem;max-width:440px;line-height:1.6;}
+
+.bs-features-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--bs-line);border:0.5px solid var(--bs-line);border-radius:12px;overflow:hidden;}
+.bs-feat{background:var(--bs-white);padding:1.25rem;display:flex;flex-direction:column;gap:8px;}
+.bs-feat-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:4px;}
+.bs-feat-icon.green{background:var(--bs-accent-light);}
+.bs-feat-icon.amber{background:var(--bs-amber-light);}
+.bs-feat-icon.gray{background:var(--bs-surface);}
+.bs-feat-icon i{font-size:18px;}
+.bs-feat-icon.green i{color:var(--bs-accent);}
+.bs-feat-icon.amber i{color:var(--bs-amber);}
+.bs-feat-icon.gray i{color:var(--bs-ink2);}
+.bs-feat-title{font-size:14px;font-weight:500;color:var(--bs-ink);}
+.bs-feat-desc{font-size:12px;color:var(--bs-ink2);line-height:1.55;font-weight:300;}
+
+.bs-match-demo{border:0.5px solid var(--bs-line);border-radius:12px;overflow:hidden;margin-top:1.5rem;}
+.bs-match-header{background:var(--bs-surface);padding:0.75rem 1.25rem;font-size:12px;font-weight:500;color:var(--bs-ink2);display:flex;justify-content:space-between;align-items:center;border-bottom:0.5px solid var(--bs-line);}
+.bs-match-row{padding:1rem 1.25rem;border-bottom:0.5px solid var(--bs-line);display:flex;align-items:center;gap:1rem;}
+.bs-match-row:last-child{border-bottom:none;}
+.bs-match-info{flex:1;}
+.bs-match-title{font-size:13px;font-weight:500;color:var(--bs-ink);margin-bottom:2px;}
+.bs-match-meta{font-size:11px;color:var(--bs-ink3);display:flex;gap:8px;}
+.bs-match-pill{background:var(--bs-surface);padding:2px 8px;border-radius:10px;font-size:10px;}
+.bs-score-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.bs-score{font-family:'DM Serif Display',serif;font-size:20px;color:var(--bs-accent);}
+.bs-score-bar-bg{width:80px;height:4px;background:var(--bs-accent-light);border-radius:2px;}
+.bs-score-bar{height:4px;background:var(--bs-accent);border-radius:2px;}
+.bs-score-label{font-size:10px;color:var(--bs-ink3);}
+
+.bs-pipeline{display:flex;gap:0;margin-top:1.5rem;overflow:hidden;border-radius:10px;border:0.5px solid var(--bs-line);}
+.bs-stage{flex:1;padding:0.75rem 0.5rem;background:var(--bs-white);border-right:0.5px solid var(--bs-line);text-align:center;}
+.bs-stage:last-child{border-right:none;}
+.bs-stage-name{font-size:10px;color:var(--bs-ink3);font-weight:500;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;}
+.bs-stage-count{font-family:'DM Serif Display',serif;font-size:22px;color:var(--bs-ink);}
+.bs-stage.active{background:var(--bs-surface);}
+.bs-stage.active .bs-stage-count{color:var(--bs-accent);}
+
+.bs-pricing-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:1.5rem;}
+.bs-plan{border:0.5px solid var(--bs-line);border-radius:12px;padding:1.25rem;}
+.bs-plan.featured{border:1.5px solid var(--bs-accent);position:relative;}
+.bs-plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--bs-accent);color:#fff;font-size:10px;font-weight:500;padding:3px 12px;border-radius:10px;white-space:nowrap;}
+.bs-plan-name{font-size:13px;font-weight:500;color:var(--bs-ink);margin-bottom:4px;}
+.bs-plan-price{font-family:'DM Serif Display',serif;font-size:28px;color:var(--bs-ink);margin-bottom:2px;}
+.bs-plan-price span{font-size:12px;font-family:'DM Sans',sans-serif;font-weight:300;color:var(--bs-ink3);}
+.bs-plan-desc{font-size:11px;color:var(--bs-ink3);margin-bottom:1rem;font-weight:300;}
+.bs-plan-features{list-style:none;display:flex;flex-direction:column;gap:6px;}
+.bs-plan-features li{font-size:11px;color:var(--bs-ink2);display:flex;align-items:flex-start;gap:6px;line-height:1.45;}
+.bs-plan-features li i{font-size:13px;color:var(--bs-accent);flex-shrink:0;margin-top:1px;}
+.bs-plan-btn{width:100%;margin-top:1.25rem;padding:8px;border-radius:7px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;border:0.5px solid var(--bs-ink);background:transparent;color:var(--bs-ink);}
+.bs-plan.featured .bs-plan-btn{background:var(--bs-ink);color:#fff;border-color:var(--bs-ink);}
+
+.bs-footer{padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--bs-ink3);}
+</style>
+
+<div class="bs-wrap">
+  <h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">BidSight — AI-powered tender discovery platform landing page</h2>
+
+  <nav class="bs-nav">
+    <div class="bs-logo">
+      <div class="bs-logo-mark">
+        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="7" cy="7" r="4.5" stroke="white" stroke-width="1.5"/>
+          <path d="M10.5 10.5L13.5 13.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="7" cy="7" r="1.5" fill="white"/>
+        </svg>
+      </div>
+      <span class="bs-logo-name">BidSight</span>
+    </div>
+    <div class="bs-nav-links">
+      <span>Features</span>
+      <span>Pricing</span>
+      <span>About</span>
+    </div>
+    <button class="bs-nav-cta">Get early access</button>
+  </nav>
+
+  <div class="bs-ticker">
+    <div class="bs-ticker-inner">
+      <div class="bs-ticker-item"><span class="bs-ticker-badge">NEW</span> Cloud Infrastructure Tender — ₹2.4 Cr · GeM Portal · Closes in 6 days</div>
+      <div class="bs-ticker-item"><span class="bs-ticker-badge amber">CLOSING</span> AI/ML Consulting RFP — ₹85 L · NIC · 2 days left</div>
+      <div class="bs-ticker-item"><span class="bs-ticker-badge">NEW</span> Cybersecurity Audit — ₹1.1 Cr · DRDO · 14 days</div>
+      <div class="bs-ticker-item"><span class="bs-ticker-badge">NEW</span> ERP Implementation — ₹3.2 Cr · CPPP · 21 days</div>
+      <div class="bs-ticker-item"><span class="bs-ticker-badge amber">CLOSING</span> Mobile App Dev — ₹40 L · State Portal · 1 day left</div>
+      <div class="bs-ticker-item"><span class="bs-ticker-badge">NEW</span> Cloud Infrastructure Tender — ₹2.4 Cr · GeM Portal · Closes in 6 days</div>
+      <div class="bs-ticker-item"><span class="bs-ticker-badge amber">CLOSING</span> AI/ML Consulting RFP — ₹85 L · NIC · 2 days left</div>
+      <div class="bs-ticker-item"><span class="bs-ticker-badge">NEW</span> Cybersecurity Audit — ₹1.1 Cr · DRDO · 14 days</div>
+      <div class="bs-ticker-item"><span class="bs-ticker-badge">NEW</span> ERP Implementation — ₹3.2 Cr · CPPP · 21 days</div>
+      <div class="bs-ticker-item"><span class="bs-ticker-badge amber">CLOSING</span> Mobile App Dev — ₹40 L · State Portal · 1 day left</div>
+    </div>
+  </div>
+
+  <div class="bs-hero">
+    <div class="bs-eyebrow"><div class="bs-eyebrow-dot"></div>AI-Powered Tender Intelligence</div>
+    <h1>See opportunities<br/><em>before everyone else.</em></h1>
+    <p class="bs-hero-sub">BidSight monitors GeM, CPPP, and 40+ procurement portals daily. AI scores every tender against your profile and drafts your proposal — so you bid smarter, not harder.</p>
+    <div class="bs-hero-ctas">
+      <button class="bs-btn-primary">Start free trial</button>
+      <button class="bs-btn-secondary">Watch 2-min demo</button>
+    </div>
+    <div class="bs-hero-proof">
+      <div class="bs-proof-stat">
+        <div class="bs-proof-num">40+</div>
+        <div class="bs-proof-label">Portals monitored daily</div>
+      </div>
+      <div class="bs-proof-divider"></div>
+      <div class="bs-proof-stat">
+        <div class="bs-proof-num">92%</div>
+        <div class="bs-proof-label">Match accuracy</div>
+      </div>
+      <div class="bs-proof-divider"></div>
+      <div class="bs-proof-stat">
+        <div class="bs-proof-num">4 hrs</div>
+        <div class="bs-proof-label">Saved per tender review</div>
+      </div>
+      <div class="bs-proof-divider"></div>
+      <div class="bs-proof-stat">
+        <div class="bs-proof-num">Minutes</div>
+        <div class="bs-proof-label">To first proposal draft</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bs-section">
+    <div class="bs-section-label">Platform</div>
+    <h2>Everything your bid team needs</h2>
+    <p class="bs-section-sub">From discovery to submission — one platform replaces your spreadsheets, portal tabs, and email reminders.</p>
+    <div class="bs-features-grid">
+      <div class="bs-feat">
+        <div class="bs-feat-icon green"><i class="ti ti-radar" aria-hidden="true"></i></div>
+        <div class="bs-feat-title">Opportunity discovery</div>
+        <div class="bs-feat-desc">Crawls GeM, CPPP, state portals, and PSU sites. New tenders appear in your feed within hours of posting.</div>
+      </div>
+      <div class="bs-feat">
+        <div class="bs-feat-icon green"><i class="ti ti-brain" aria-hidden="true"></i></div>
+        <div class="bs-feat-title">AI match scoring</div>
+        <div class="bs-feat-desc">Every tender gets a 0–100 match score against your services, certifications, geography, and budget range.</div>
+      </div>
+      <div class="bs-feat">
+        <div class="bs-feat-icon amber"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+        <div class="bs-feat-title">Proposal assistant</div>
+        <div class="bs-feat-desc">Upload your company profile and past proposals. Generate a full technical proposal draft in minutes.</div>
+      </div>
+      <div class="bs-feat">
+        <div class="bs-feat-icon amber"><i class="ti ti-trophy" aria-hidden="true"></i></div>
+        <div class="bs-feat-title">Competitor intelligence</div>
+        <div class="bs-feat-desc">See who's winning similar tenders, their bid patterns, and typical contract sizes.</div>
+      </div>
+      <div class="bs-feat">
+        <div class="bs-feat-icon gray"><i class="ti ti-bell" aria-hidden="true"></i></div>
+        <div class="bs-feat-title">Deadline monitoring</div>
+        <div class="bs-feat-desc">30-, 14-, 7-, 3-day and 24-hour reminders via email, Slack, or Teams. Never miss a closing date.</div>
+      </div>
+      <div class="bs-feat">
+        <div class="bs-feat-icon gray"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+        <div class="bs-feat-title">Bid analytics</div>
+        <div class="bs-feat-desc">Track win rate, submission rate, and revenue pipeline. Identify which categories you win most.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bs-section">
+    <div class="bs-section-label">Smart matching</div>
+    <h2>Your feed, scored for you</h2>
+    <p class="bs-section-sub">No more scanning irrelevant tenders. BidSight ranks every opportunity by how well it fits your firm.</p>
+    <div class="bs-match-demo">
+      <div class="bs-match-header">
+        <span>Recommended opportunities</span>
+        <span style="font-weight:400;color:var(--bs-ink3);">Sorted by match · Today</span>
+      </div>
+      <div class="bs-match-row">
+        <div class="bs-match-info">
+          <div class="bs-match-title">AI-Powered Analytics Platform — Ministry of Finance</div>
+          <div class="bs-match-meta">
+            <span class="bs-match-pill">₹1.8 Cr</span>
+            <span class="bs-match-pill">GeM</span>
+            <span class="bs-match-pill">Closes in 12 days</span>
+          </div>
+        </div>
+        <div class="bs-score-wrap">
+          <div class="bs-score">96%</div>
+          <div class="bs-score-bar-bg"><div class="bs-score-bar" style="width:96%"></div></div>
+          <div class="bs-score-label">Match score</div>
+        </div>
+      </div>
+      <div class="bs-match-row">
+        <div class="bs-match-info">
+          <div class="bs-match-title">Cloud Migration Services — IRCTC</div>
+          <div class="bs-match-meta">
+            <span class="bs-match-pill">₹3.4 Cr</span>
+            <span class="bs-match-pill">CPPP</span>
+            <span class="bs-match-pill">Closes in 20 days</span>
+          </div>
+        </div>
+        <div class="bs-score-wrap">
+          <div class="bs-score">87%</div>
+          <div class="bs-score-bar-bg"><div class="bs-score-bar" style="width:87%"></div></div>
+          <div class="bs-score-label">Match score</div>
+        </div>
+      </div>
+      <div class="bs-match-row">
+        <div class="bs-match-info">
+          <div class="bs-match-title">Cybersecurity Audit & Compliance — DRDO</div>
+          <div class="bs-match-meta">
+            <span class="bs-match-pill">₹95 L</span>
+            <span class="bs-match-pill">Direct</span>
+            <span class="bs-match-pill">Closes in 7 days</span>
+          </div>
+        </div>
+        <div class="bs-score-wrap">
+          <div class="bs-score">74%</div>
+          <div class="bs-score-bar-bg"><div class="bs-score-bar" style="width:74%"></div></div>
+          <div class="bs-score-label">Match score</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bs-section">
+    <div class="bs-section-label">Bid CRM</div>
+    <h2>Your pipeline, at a glance</h2>
+    <p class="bs-section-sub">Track every bid from discovery to award in one place. Assign owners, add notes, and never lose context.</p>
+    <div class="bs-pipeline">
+      <div class="bs-stage">
+        <div class="bs-stage-name">New</div>
+        <div class="bs-stage-count">24</div>
+      </div>
+      <div class="bs-stage">
+        <div class="bs-stage-name">Evaluating</div>
+        <div class="bs-stage-count">9</div>
+      </div>
+      <div class="bs-stage active">
+        <div class="bs-stage-name">Drafting</div>
+        <div class="bs-stage-count">3</div>
+      </div>
+      <div class="bs-stage">
+        <div class="bs-stage-name">Submitted</div>
+        <div class="bs-stage-count">11</div>
+      </div>
+      <div class="bs-stage">
+        <div class="bs-stage-name">Won</div>
+        <div class="bs-stage-count">5</div>
+      </div>
+      <div class="bs-stage">
+        <div class="bs-stage-name">Lost</div>
+        <div class="bs-stage-count">6</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bs-section">
+    <div class="bs-section-label">Pricing</div>
+    <h2>Simple, transparent plans</h2>
+    <p class="bs-section-sub">Start free for 14 days. No credit card required.</p>
+    <div class="bs-pricing-grid">
+      <div class="bs-plan">
+        <div class="bs-plan-name">Starter</div>
+        <div class="bs-plan-price">₹999<span>/mo</span></div>
+        <div class="bs-plan-desc">For solo consultants getting started</div>
+        <ul class="bs-plan-features">
+          <li><i class="ti ti-check" aria-hidden="true"></i>Opportunity feed</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>AI summaries</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>Basic tracking</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>Email alerts</li>
+        </ul>
+        <button class="bs-plan-btn">Get started</button>
+      </div>
+      <div class="bs-plan featured">
+        <div class="bs-plan-badge">Most popular</div>
+        <div class="bs-plan-name">Professional</div>
+        <div class="bs-plan-price">₹2,999<span>/mo</span></div>
+        <div class="bs-plan-desc">For growing agencies &amp; consultancies</div>
+        <ul class="bs-plan-features">
+          <li><i class="ti ti-check" aria-hidden="true"></i>Smart match scoring</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>Proposal generation</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>Analytics dashboard</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>Slack &amp; Teams alerts</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>Competitor intelligence</li>
+        </ul>
+        <button class="bs-plan-btn">Start free trial</button>
+      </div>
+      <div class="bs-plan">
+        <div class="bs-plan-name">Enterprise</div>
+        <div class="bs-plan-price" style="font-size:22px;">Custom</div>
+        <div class="bs-plan-desc">For large teams with complex needs</div>
+        <ul class="bs-plan-features">
+          <li><i class="ti ti-check" aria-hidden="true"></i>Team collaboration</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>API access</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>Custom integrations</li>
+          <li><i class="ti ti-check" aria-hidden="true"></i>Dedicated support</li>
+        </ul>
+        <button class="bs-plan-btn">Contact sales</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="bs-footer">
+    <span>© 2026 BidSight · See opportunities before everyone else.</span>
+    <span style="display:flex;gap:1rem;">
+      <span>Privacy</span>
+      <span>Terms</span>
+      <span>Contact</span>
+    </span>
+  </div>
+</div>
