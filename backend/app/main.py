@@ -19,6 +19,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from app.routers import tenders
+app.include_router(tenders.router, prefix="/api/v1")
 
 @app.get("/")
 def root():
