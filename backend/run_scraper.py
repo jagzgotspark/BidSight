@@ -6,6 +6,7 @@ import asyncio
 import sys
 import os
 
+
 sys.path.insert(0, os.path.dirname(__file__))
 
 from scraper.scrapers.gem import GeMScraper
@@ -68,7 +69,7 @@ async def run(scraper_cls, name: str, max_pages: int = 2):
 
 
 async def main():
-    await run(CPPPScraper, "CPPP", max_pages=2)
+    await run(GeMScraper, "GeM", max_pages=2)
     print("\nDone!")
 
 if __name__ == "__main__":

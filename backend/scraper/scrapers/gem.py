@@ -31,7 +31,7 @@ def _classify(title: str, description: str = "") -> TenderCategory:
 def _parse_inr(raw: str) -> Optional[float]:
     if not raw:
         return None
-    cleaned = re.sub(r"[₹,\s]", "", raw)
+    cleaned = re.sub(r"[₹,\s]", "", str(raw))
     cleaned_lower = cleaned.lower()
     multiplier = 1.0
     if cleaned_lower.endswith("cr"):
@@ -53,64 +53,99 @@ def _parse_date(raw: str) -> Optional[datetime]:
         "%d-%m-%Y %H:%M",
         "%Y-%m-%dT%H:%M:%S",
         "%d %b %Y",
+        "%Y-%m-%d %H:%M:%S",
     ]
     for fmt in formats:
         try:
-            return datetime.strptime(raw.strip(), fmt)
+            return datetime.strptime(str(raw).strip(), fmt)
         except ValueError:
             continue
     return None
 
 
 class GeMScraper(BaseScraper):
+    """
+    Scrapes GeM using the internal /all-bids-data JSON API.
+    Discovered by intercepting XHR calls from the browser.
+    """
     source_name = "gem"
     base_url = "https://bidplus.gem.gov.in"
-    page_delay_seconds = 2.5
-    _API_URL = "https://bidplus.gem.gov.in/bidlists"
+    page_delay_seconds = 2.0
+
+    # The real data endpoint — returns JSON directly
+    _API_URL = "https://bidplus.gem.gov.in/all-bids-data"
+    _PAGE_SIZE = 20
 
     async def _fetch_listing_page(self, page: int) -> httpx.Response:
-        params = {"page_no": page, "searchedCriteria": ""}
-        return await self._client.get(self._API_URL, params=params)
+        params = {
+            "page_no": page,
+            "rows": self._PAGE_SIZE,
+            "searchedCriteria": "",
+            "byType": "all",
+            "sort": "Bid-End-Date-Oldest",
+        }
+        # Use browser-like headers so the API doesn't block us
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/120.0.0.0 Safari/537.36"
+            ),
+            "Referer": "https://bidplus.gem.gov.in/all-bids",
+            "Accept": "application/json, text/javascript, */*; q=0.01",
+            "X-Requested-With": "XMLHttpRequest",
+        }
+        return await self._client.get(self._API_URL, params=params, headers=headers)
 
     def _parse_listing(self, response: httpx.Response) -> list[Tender]:
         try:
             data = response.json()
-        except Exception:
-            return self._parse_html_fallback(response.text)
+        except Exception as exc:
+            self.log.warning("json_parse_error", error=str(exc))
+            return []
 
-        bids = (
-            data.get("data", {}).get("bids", [])
-            or data.get("bids", [])
+        # Navigate the response structure
+        docs = (
+            data.get("response", {})
+                .get("response", {})
+                .get("docs", [])
+            or data.get("docs", [])
             or []
         )
 
         tenders: list[Tender] = []
-        for bid in bids:
+        for doc in docs:
             try:
-                tenders.append(self._normalise_bid(bid))
+                tenders.append(self._normalise_doc(doc))
             except Exception as exc:
-                self.log.warning("bid_parse_error", error=str(exc))
+                self.log.warning("doc_parse_error", error=str(exc))
         return tenders
 
-    def _normalise_bid(self, bid: dict) -> Tender:
-        bid_no = str(bid.get("bid_no") or bid.get("bidno") or "")
-        title = str(bid.get("bid_title") or bid.get("name") or "").strip()
-        authority = str(bid.get("ministry") or bid.get("dept") or "").strip()
-        location = str(bid.get("location") or bid.get("state") or "").strip()
-        deadline_raw = str(bid.get("bid_end_dt") or bid.get("end_date") or "")
-        published_raw = str(bid.get("publish_date") or bid.get("created_on") or "")
-        budget_raw = str(bid.get("estimated_value") or bid.get("qty_value") or "")
-        description = str(bid.get("item_description") or bid.get("description") or "")
-        source_url = f"{self.base_url}/viewbid/{bid_no}" if bid_no else ""
+    def _normalise_doc(self, doc: dict) -> Tender:
+        def first(val):
+            """GeM wraps most values in lists."""
+            if isinstance(val, list):
+                return val[0] if val else ""
+            return val or ""
+
+        bid_id = str(first(doc.get("id") or doc.get("b_id", "")))
+        bid_number = str(first(doc.get("b_bid_number", "")))
+        title = str(first(doc.get("b_category_name") or doc.get("b_title", ""))).strip()
+        authority = str(first(doc.get("b_ministry_name") or doc.get("b_dept_name", ""))).strip()
+        location = str(first(doc.get("b_state", ""))).strip()
+        deadline_raw = str(first(doc.get("b_bid_end_date") or doc.get("b_end_date", "")))
+        published_raw = str(first(doc.get("b_publish_date") or doc.get("b_start_date", "")))
+        budget_raw = str(first(doc.get("b_estimated_amount") or doc.get("b_total_value", "")))
+
+        source_url = f"{self.base_url}/viewbid/{bid_number}" if bid_number else ""
 
         return Tender(
-            tender_id=bid_no or title[:40],
+            tender_id=bid_number or bid_id or title[:40],
             source=TenderSource.GEM,
-            title=title or f"GeM Bid {bid_no}",
-            description=description,
+            title=title or f"GeM Bid {bid_number}",
             authority=authority,
             location=location,
-            category=_classify(title, description),
+            category=_classify(title),
             budget_max=_parse_inr(budget_raw),
             budget_raw=budget_raw,
             deadline=_parse_date(deadline_raw),
@@ -118,51 +153,17 @@ class GeMScraper(BaseScraper):
             published_at=_parse_date(published_raw),
             status=TenderStatus.ACTIVE,
             source_url=source_url,
-            eligibility_raw=str(bid.get("eligibility") or ""),
         )
-
-    def _parse_html_fallback(self, html: str) -> list[Tender]:
-        soup = BeautifulSoup(html, "lxml")
-        tenders: list[Tender] = []
-        for row in soup.select(".bid-list-row, tr.bid-row, div.bid-item"):
-            try:
-                title_el = row.select_one(".bid-title, td.title, .bid-name")
-                bid_no_el = row.select_one(".bid-no, td.bid-number")
-                deadline_el = row.select_one(".end-date, td.deadline")
-                budget_el = row.select_one(".estimated-value, td.value")
-                authority_el = row.select_one(".ministry, td.authority")
-                link_el = row.select_one("a[href]")
-                if not title_el:
-                    continue
-                title = title_el.get_text(strip=True)
-                bid_no = bid_no_el.get_text(strip=True) if bid_no_el else ""
-                deadline_raw = deadline_el.get_text(strip=True) if deadline_el else ""
-                budget_raw = budget_el.get_text(strip=True) if budget_el else ""
-                authority = authority_el.get_text(strip=True) if authority_el else ""
-                href = link_el["href"] if link_el else ""
-                source_url = href if href.startswith("http") else self.base_url + href
-                tenders.append(Tender(
-                    tender_id=bid_no or title[:40],
-                    source=TenderSource.GEM,
-                    title=title,
-                    authority=authority,
-                    category=_classify(title),
-                    budget_max=_parse_inr(budget_raw),
-                    budget_raw=budget_raw,
-                    deadline=_parse_date(deadline_raw),
-                    deadline_raw=deadline_raw,
-                    status=TenderStatus.ACTIVE,
-                    source_url=source_url,
-                ))
-            except Exception:
-                pass
-        return tenders
 
     def _has_next_page(self, response: httpx.Response, current_page: int) -> bool:
         try:
             data = response.json()
-            total = int(data.get("data", {}).get("total_records", 0) or 0)
-            per_page = int(data.get("data", {}).get("per_page", 20) or 20)
-            return current_page * per_page < total
+            num_found = (
+                data.get("response", {})
+                    .get("response", {})
+                    .get("numFound", 0)
+                or 0
+            )
+            return current_page * self._PAGE_SIZE < int(num_found)
         except Exception:
             return False
