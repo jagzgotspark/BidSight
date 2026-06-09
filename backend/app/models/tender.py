@@ -40,6 +40,8 @@ class Tender(Base):
     ai_risk = Column(Text, nullable=True)
     ai_eligibility = Column(Text, nullable=True)
     ai_processed = Column(Boolean, default=False)
+    match_score = Column(Float, nullable=True)
+    match_reasoning = Column(Text, nullable=True)
 
     # Timestamps
     scraped_at = Column(DateTime, nullable=True)

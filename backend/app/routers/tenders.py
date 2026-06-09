@@ -24,6 +24,7 @@ def list_tenders(
     closing_in_days: Optional[int] = None,
     search: Optional[str] = None,
     db: Session = Depends(get_db),
+    scored_only: bool = False,
 ):
     """
     List tenders with filters.
@@ -45,6 +46,8 @@ def list_tenders(
         query = query.filter(Tender.budget_max >= min_budget)
     if max_budget:
         query = query.filter(Tender.budget_max <= max_budget)
+    if scored_only:
+        query = query.filter(Tender.match_score.isnot(None))
     if closing_in_days:
         cutoff = datetime.utcnow() + timedelta(days=closing_in_days)
         query = query.filter(

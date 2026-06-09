@@ -23,6 +23,8 @@ class TenderResponse(BaseModel):
     ai_summary: Optional[str]
     ai_risk: Optional[str]
     ai_eligibility: Optional[str]
+    match_score: Optional[float] = None
+    match_reasoning: Optional[str] = None
     scraped_at: Optional[datetime]
     created_at: datetime
 

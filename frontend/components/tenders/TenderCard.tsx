@@ -4,6 +4,19 @@ import { Card } from "@/components/ui/card";
 import { formatBudget, daysToDeadline, categoryLabel, sourceLabel } from "@/lib/tenderUtils";
 import { ExternalLink, Clock, Building2, MapPin } from "lucide-react";
 
+function MatchScoreBar({ score }: { score: number }) {
+  const color = score >= 70 ? "bg-green-500" : score >= 50 ? "bg-amber-400" : "bg-gray-300";
+  const label = score >= 70 ? "text-green-700" : score >= 50 ? "text-amber-600" : "text-gray-500";
+  return (
+    <div className="flex items-center gap-2 mt-2">
+      <div className="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${score}%` }} />
+      </div>
+      <span className={`text-xs font-medium tabular-nums ${label}`}>{score}% match</span>
+    </div>
+  );
+}
+
 export default function TenderCard({ tender }: { tender: Tender }) {
   const days = daysToDeadline(tender.deadline);
 
@@ -40,6 +53,9 @@ export default function TenderCard({ tender }: { tender: Tender }) {
           </div>
           {tender.ai_summary && (
             <p className="text-xs text-muted-foreground line-clamp-2">{tender.ai_summary}</p>
+          )}
+          {tender.match_score !== null && tender.match_score !== undefined && (
+            <MatchScoreBar score={tender.match_score} />
           )}
         </div>
         <div className="flex flex-col items-end gap-2 flex-shrink-0">

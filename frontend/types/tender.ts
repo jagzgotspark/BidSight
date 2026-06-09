@@ -18,6 +18,8 @@ export interface Tender {
   ai_summary: string | null;
   ai_risk: string | null;
   ai_eligibility: string | null;
+  match_score: number | null;
+  match_reasoning: string | null;
   scraped_at: string | null;
   created_at: string;
 }
