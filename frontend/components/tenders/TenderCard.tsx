@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Tender } from "@/types/tender";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -25,7 +26,9 @@ export default function TenderCard({ tender }: { tender: Tender }) {
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 space-y-2">
           <div className="flex items-start gap-2">
-            <h3 className="font-medium text-sm leading-snug">{tender.title}</h3>
+            <Link href={`/tenders/${tender.id}`} className="font-medium text-sm leading-snug hover:underline">
+              {tender.title}
+            </Link>
             {tender.source_url && (
               <a href={tender.source_url} target="_blank" rel="noopener noreferrer"
                 className="text-muted-foreground hover:text-foreground mt-0.5 flex-shrink-0">
