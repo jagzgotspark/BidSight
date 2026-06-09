@@ -215,6 +215,36 @@ async def main():
     finally:
         db.close()
 
+    # Auto-score new tenders
+    print("\nScoring new tenders...")
+    from app.models.company_profile import CompanyProfile
+    from app.services.match_service import score_tender
+
+    profile = db.query(CompanyProfile).first()
+    if profile:
+        scored = 0
+        for t in new_tenders:
+            try:
+                # Fetch the saved tender object
+                from app.models.tender import Tender as TenderORM
+                tender_obj = db.query(TenderORM).filter(
+                    TenderORM.id == t.fingerprint
+                ).first()
+                if tender_obj:
+                    result = await score_tender(tender_obj, profile)
+                    tender_obj.match_score = result['score']
+                    tender_obj.match_reasoning = result['reasoning']
+                    db.commit()
+                    scored += 1
+                    print(f"  {result['score']}% — {tender_obj.title[:50]}")
+                    await asyncio.sleep(0.5)
+            except Exception as e:
+                print(f"  Score error: {e}")
+        print(f"✓ Scored {scored} tenders")
+    else:
+        print("  No company profile found — set one up at POST /api/v1/match/profile")
+
+
 
 if __name__ == "__main__":
     asyncio.run(main())
