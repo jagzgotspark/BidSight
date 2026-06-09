@@ -13,14 +13,16 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Next.js dev server
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-from app.routers import tenders
+from app.routers import tenders, match
 app.include_router(tenders.router, prefix="/api/v1")
+app.include_router(match.router, prefix="/api/v1")
+
 
 @app.get("/")
 def root():

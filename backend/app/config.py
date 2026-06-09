@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     clerk_secret_key: str
     clerk_publishable_key: str
 
-    # Anthropic (Phase 3)
-    anthropic_api_key: str = ""
+    # Groq (free AI for match scoring)
+    groq_api_key: str = ""
 
     # Razorpay (Phase 4)
     razorpay_key_id: str = ""

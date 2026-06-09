@@ -21,6 +21,7 @@ if config.config_file_name is not None:
 from app.models.user import User
 from app.models.tender import Tender
 from app.models.bid import Bid
+from app.models.company_profile import CompanyProfile
 from app.database import Base
 
 target_metadata = Base.metadata
