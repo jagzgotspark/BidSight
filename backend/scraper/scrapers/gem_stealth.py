@@ -107,7 +107,6 @@ def _parse_api_response(data: dict) -> list[Tender]:
             print(f"  Doc error: {exc}")
     return tenders
 
-
 def _normalise_doc(doc: dict) -> Tender:
     def first(val):
         if isinstance(val, list):
@@ -115,13 +114,25 @@ def _normalise_doc(doc: dict) -> Tender:
         return val or ""
 
     bid_number = str(first(doc.get("b_bid_number", "")))
-    title = str(first(doc.get("b_category_name") or doc.get("b_title", ""))).strip()
-    authority = str(first(doc.get("b_ministry_name") or doc.get("b_dept_name", ""))).strip()
-    location = str(first(doc.get("b_state", ""))).strip()
-    deadline_raw = str(first(doc.get("b_bid_end_date") or doc.get("b_end_date", "")))
-    published_raw = str(first(doc.get("b_publish_date") or doc.get("b_start_date", "")))
-    budget_raw = str(first(doc.get("b_estimated_amount") or doc.get("b_total_value", "")))
+    title = str(first(doc.get("b_category_name") or doc.get("bd_category_name", ""))).strip()
+    ministry = str(first(doc.get("ba_official_details_minName", ""))).strip()
+    dept = str(first(doc.get("ba_official_details_deptName", ""))).strip()
+    authority = ministry if ministry else dept
     bid_id = str(first(doc.get("id") or doc.get("b_id", "")))
+
+    # Real date fields
+    deadline_raw = str(first(doc.get("final_end_date_sort", "")))
+    published_raw = str(first(doc.get("final_start_date_sort", "")))
+
+    # Parse ISO format dates from GeM
+    def parse_gem_date(raw: str):
+        if not raw:
+            return None
+        try:
+            return datetime.strptime(raw, "%Y-%m-%dT%H:%M:%SZ")
+        except ValueError:
+            return None
+
     source_url = f"https://bidplus.gem.gov.in/viewbid/{bid_number}" if bid_number else ""
 
     return Tender(
@@ -129,16 +140,17 @@ def _normalise_doc(doc: dict) -> Tender:
         source=TenderSource.GEM,
         title=title or f"GeM Bid {bid_number}",
         authority=authority,
-        location=location,
+        location="",
         category=_classify(title),
-        budget_max=_parse_inr(budget_raw),
-        budget_raw=budget_raw,
-        deadline=_parse_date(deadline_raw),
+        budget_max=None,
+        budget_raw="",
+        deadline=parse_gem_date(deadline_raw),
         deadline_raw=deadline_raw,
-        published_at=_parse_date(published_raw),
+        published_at=parse_gem_date(published_raw),
         status=TenderStatus.ACTIVE,
         source_url=source_url,
     )
+
 
 
 async def main():
