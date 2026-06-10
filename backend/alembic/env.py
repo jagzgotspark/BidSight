@@ -23,6 +23,7 @@ from app.models.tender import Tender
 from app.models.bid import Bid
 from app.models.company_profile import CompanyProfile
 from app.database import Base
+from app.models.proposal import Proposal 
 
 target_metadata = Base.metadata
 
