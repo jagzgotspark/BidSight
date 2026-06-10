@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
+from app.routers import tenders, match, bids
+app.include_router(tenders.router, prefix="/api/v1")
+app.include_router(match.router, prefix="/api/v1")
+app.include_router(bids.router, prefix="/api/v1")
 
 settings = get_settings()
 
