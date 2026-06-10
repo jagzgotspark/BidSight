@@ -6,7 +6,7 @@ class Bid(Base):
     __tablename__ = "bids"
 
     id = Column(String, primary_key=True)
-    user_id = Column(String, ForeignKey("users.id"), nullable=False)
+    user_id = Column(String, nullable=False)
     tender_id = Column(String, ForeignKey("tenders.id"), nullable=False)
 
     # Pipeline stage

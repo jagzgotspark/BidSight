@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.bid import Bid
 from app.models.tender import Tender
+from app.models.user import User  # needed for FK resolution
 from app.schemas.bid import BidCreate, BidUpdate, BidResponse
 
 router = APIRouter(prefix="/bids", tags=["bids"])
