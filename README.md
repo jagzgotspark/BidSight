@@ -181,6 +181,3 @@ Interactive docs at `http://localhost:8000/docs`.
 - [ ] Scheduled auto-scraping (APScheduler)
 - [ ] Deployment (Render/Fly.io + Vercel)
 
-## License
-
-MIT
