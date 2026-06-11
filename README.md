@@ -57,6 +57,8 @@ Validated results: IT/consulting tenders score 60–85%, physical goods correctl
 Python 3.13 (main backend) is incompatible with Playwright's greenlet dependency, so scraping runs in an isolated Python 3.11 venv — a real-world dependency conflict solved with environment separation.
 
 ## Project structure
+
+```
 BidSight/
 ├── backend/
 │   ├── app/
@@ -88,6 +90,7 @@ BidSight/
 │   ├── components/              # TenderFeed, TenderCard, shadcn/ui
 │   └── types/                   # TypeScript interfaces
 └── docker-compose.yml           # PostgreSQL (5433) + Redis (6379)
+```
 
 ## Running locally
 
