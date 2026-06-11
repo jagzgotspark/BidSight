@@ -19,11 +19,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.routers import tenders, match, bids, proposals
+from app.routers import tenders, match, bids, proposals, analytics
 app.include_router(tenders.router, prefix="/api/v1")
 app.include_router(match.router, prefix="/api/v1")
 app.include_router(bids.router, prefix="/api/v1")
 app.include_router(proposals.router, prefix="/api/v1")
+app.include_router(analytics.router, prefix="/api/v1")
 
 
 @app.get("/")

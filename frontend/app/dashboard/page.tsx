@@ -9,6 +9,7 @@ export default function DashboardPage() {
           <span className="text-foreground font-medium">Tenders</span>
           <a href="/dashboard/pipeline" className="hover:text-foreground">Pipeline</a>
           <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
+          <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
         </nav>
       </header>
       <main className="max-w-6xl mx-auto px-6 py-8">
