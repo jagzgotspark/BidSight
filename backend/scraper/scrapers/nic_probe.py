@@ -9,34 +9,28 @@ async def main():
         browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
         await Stealth().apply_stealth_async(page)
-
-        print("Opening CPPP latest active tenders...")
+        print("Opening org list...")
         await page.goto(URL, wait_until="domcontentloaded", timeout=60000)
-        await asyncio.sleep(8)
+        await asyncio.sleep(6)
 
-        print(f"Title: {await page.title()}")
-        content = await page.content()
-        print(f"HTML length: {len(content)}")
+        # Click the first organisation's tender-count link
+        first = await page.query_selector("table.list_table a")
+        href = await first.get_attribute("href")
+        full_url = "https://eprocure.gov.in" + href
+        print(f"Following: {full_url[:90]}...")
+        await page.goto(full_url, wait_until="domcontentloaded", timeout=60000)
+        await asyncio.sleep(6)
 
         content = await page.content()
-        has_captcha = "captcha" in content.lower()
-        print(f"CAPTCHA present: {has_captcha}")
+        print(f"CAPTCHA on drill-down page: {'captcha' in content.lower()}")
 
         rows = await page.query_selector_all("table.list_table tr")
-        print(f"list_table rows: {len(rows)}")
-        for i, row in enumerate(rows[:15]):
+        print(f"Drill-down list_table rows: {len(rows)}")
+        for i, row in enumerate(rows[:12]):
             text = (await row.inner_text()).strip().replace("\n", " | ")
             print(f"  [{i}] {text[:180]}")
-            print("\n--- Organisation links ---")
-        org_links = await page.query_selector_all("table.list_table a")
-        print(f"Total links: {len(org_links)}")
-        for link in org_links[:15]:
-            href = await link.get_attribute("href")
-            text = (await link.inner_text()).strip()
-            if text and len(text) > 2:
-                print(f"  {text[:50]} -> {href}")
 
-        await asyncio.sleep(15)  # keep browser open to inspect
+        await asyncio.sleep(15)
         await browser.close()
 
 asyncio.run(main())
