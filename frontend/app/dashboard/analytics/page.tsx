@@ -193,9 +193,10 @@ function Header() {
       <span className="text-xl font-semibold tracking-tight">BidSight</span>
       <nav className="flex gap-4 text-sm text-muted-foreground">
         <a href="/dashboard" className="hover:text-foreground">Tenders</a>
-        <a href="/dashboard/pipeline" className="hover:text-foreground">Pipeline</a>
+        <span className="text-foreground font-medium">Pipeline</span>
         <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
-        <span className="text-foreground font-medium">Analytics</span>
+        <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
+        <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
       </nav>
     </header>
   );

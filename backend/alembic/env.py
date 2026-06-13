@@ -24,6 +24,7 @@ from app.models.bid import Bid
 from app.models.company_profile import CompanyProfile
 from app.database import Base
 from app.models.proposal import Proposal 
+from app.models.alert import Alert
 
 target_metadata = Base.metadata
 

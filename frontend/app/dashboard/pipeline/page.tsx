@@ -54,7 +54,9 @@ export default function PipelinePage() {
           <nav className="flex gap-4 text-sm text-muted-foreground">
             <a href="/dashboard" className="hover:text-foreground">Tenders</a>
             <span className="text-foreground font-medium">Pipeline</span>
-            <span>Analytics</span>
+            <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
+            <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
+            <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
           </nav>
         </header>
         <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
@@ -71,7 +73,9 @@ export default function PipelinePage() {
         <nav className="flex gap-4 text-sm text-muted-foreground">
           <a href="/dashboard" className="hover:text-foreground">Tenders</a>
           <span className="text-foreground font-medium">Pipeline</span>
-          <span>Analytics</span>
+          <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
+          <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
+          <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
         </nav>
       </header>
 

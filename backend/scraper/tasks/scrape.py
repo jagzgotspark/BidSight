@@ -89,6 +89,18 @@ def scrape_cppp_portal(self, max_orgs: int = 246) -> dict:
         log.error("cppp task error: %s", exc)
         raise self.retry(exc=exc)
 
+@app.task(name="alerts.tasks.check_deadline_alerts")
+def check_deadline_alerts() -> dict:
+    """Scan tracked bids and create deadline alerts (runs in the backend venv)."""
+    from app.database import SessionLocal
+    from app.services.alert_service import scan_and_create_alerts
+    db = SessionLocal()
+    try:
+        result = scan_and_create_alerts(db)
+        log.info("deadline_alerts: %s", result)
+        return result
+    finally:
+        db.close()
 
 app.conf.beat_schedule = {
     "scrape-gem-every-6h": {
@@ -99,5 +111,9 @@ app.conf.beat_schedule = {
         "task": "scraper.tasks.scrape_cppp_portal",
         "schedule": crontab(hour=0, minute=30),  # 06:00 IST
         "kwargs": {"max_orgs": 246},
+    },
+    "deadline-alerts-daily": {
+        "task": "alerts.tasks.check_deadline_alerts",
+        "schedule": crontab(hour=2, minute=30),  # 08:00 IST
     },
 }
