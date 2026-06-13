@@ -179,7 +179,8 @@ def _to_dict(t: Tender) -> dict:
 
 async def main(max_orgs: int = 250):
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        headless = os.getenv("SCRAPER_HEADLESS", "0") == "1"
+        browser = await p.chromium.launch(headless=headless)
         page = await browser.new_page()
         await Stealth().apply_stealth_async(page)
 
