@@ -39,6 +39,7 @@ class Tender(Base):
     ai_summary = Column(Text, nullable=True)
     ai_risk = Column(Text, nullable=True)
     ai_eligibility = Column(Text, nullable=True)
+    ai_analysis = Column(Text, nullable=True)   
     ai_processed = Column(Boolean, default=False)
     match_score = Column(Float, nullable=True)
     match_reasoning = Column(Text, nullable=True)
