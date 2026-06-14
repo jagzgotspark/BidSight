@@ -11,7 +11,7 @@ from app.schemas.profile import (
     CompanyProfileResponse,
     MatchScoreResponse,
 )
-from app.services.match_service import score_all_tenders
+from app.services.match_service import score_all_tenders, score_tender
 
 router = APIRouter(prefix="/match", tags=["match"])
 
@@ -86,3 +86,47 @@ def get_match_scores(
 
     results = asyncio.run(score_all_tenders(tenders, profile, limit=limit))
     return results
+
+@router.post("/score/{tender_id}")
+async def score_single_tender(
+    tender_id: str,
+    user_id: str = "demo_user",
+    db: Session = Depends(get_db),
+):
+    """Score one tender against the profile and persist the result."""
+    profile = db.query(CompanyProfile).filter(
+        CompanyProfile.user_id == user_id
+    ).first()
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Set up your company profile first at POST /api/v1/match/profile",
+        )
+
+    tender = db.query(Tender).filter(Tender.id == tender_id).first()
+    if not tender:
+        raise HTTPException(status_code=404, detail="Tender not found")
+
+    if tender.match_score is not None:
+        return {
+            "tender_id": tender.id,
+            "match_score": tender.match_score,
+            "match_reasoning": tender.match_reasoning,
+            "cached": True,
+        }
+
+    try:
+        result = await score_tender(tender, profile)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Scoring failed: {exc}")
+
+    tender.match_score = result["score"]
+    tender.match_reasoning = result.get("reasoning", "")
+    db.commit()
+
+    return {
+        "tender_id": tender.id,
+        "match_score": tender.match_score,
+        "match_reasoning": tender.match_reasoning,
+        "cached": False,
+    }

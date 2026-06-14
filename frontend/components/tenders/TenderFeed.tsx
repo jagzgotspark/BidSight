@@ -1,19 +1,24 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { TenderListResponse } from "@/types/tender";
+import { Tender, TenderListResponse } from "@/types/tender";
 import TenderCard from "./TenderCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function TenderFeed() {
   const [search, setSearch] = useState("");
   const [source, setSource] = useState("all");
   const [category, setCategory] = useState("all");
+  const [scoringId, setScoringId] = useState<string | null>(null);
+  const attempted = useRef<Set<string>>(new Set());
+  const qc = useQueryClient();
+
+  const queryKey = ["tenders", search, source, category];
 
   const { data, isLoading, isError } = useQuery<TenderListResponse>({
-    queryKey: ["tenders", search, source, category],
+    queryKey,
     queryFn: async () => {
       const params: Record<string, string> = {};
       if (search) params.search = search;
@@ -23,6 +28,48 @@ export default function TenderFeed() {
       return res.data;
     },
   });
+
+  // Background scoring queue: score unscored tenders one at a time
+  useEffect(() => {
+    if (!data?.items) return;
+    const queue = data.items.filter(
+      (t) =>
+        (t.match_score === null || t.match_score === undefined) &&
+        !attempted.current.has(t.id)
+    );
+    if (queue.length === 0) return;
+
+    let cancelled = false;
+    (async () => {
+      for (const t of queue) {
+        if (cancelled) break;
+        attempted.current.add(t.id);
+        setScoringId(t.id);
+        try {
+          const res = await api.post(`/match/score/${t.id}`);
+          const { match_score, match_reasoning } = res.data;
+          qc.setQueryData<TenderListResponse>(queryKey, (old) => {
+            if (!old) return old;
+            return {
+              ...old,
+              items: old.items.map((it) =>
+                it.id === t.id ? { ...it, match_score, match_reasoning } : it
+              ),
+            };
+          });
+        } catch {
+          // Leave unscored — card will show "Not scored yet"
+        }
+      }
+      if (!cancelled) setScoringId(null);
+    })();
+
+    return () => {
+      cancelled = true;
+      setScoringId(null);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, qc, search, source, category]);
 
   return (
     <div className="space-y-4">
@@ -56,7 +103,9 @@ export default function TenderFeed() {
       {data && data.items.length === 0 && (
         <p className="text-sm text-muted-foreground py-12 text-center">No tenders yet. Run the scraper to populate data.</p>
       )}
-      {data && data.items.map((tender) => <TenderCard key={tender.id} tender={tender} />)}
+      {data && data.items.map((tender) => (
+        <TenderCard key={tender.id} tender={tender} isScoring={scoringId === tender.id} />
+      ))}
       {data && data.total > 0 && (
         <p className="text-xs text-muted-foreground text-right">Showing {data.items.length} of {data.total} tenders</p>
       )}

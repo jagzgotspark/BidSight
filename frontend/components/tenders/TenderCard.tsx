@@ -2,11 +2,11 @@ import { Tender } from "@/types/tender";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatBudget, daysToDeadline, categoryLabel, sourceLabel, tenderSourceUrl } from "@/lib/tenderUtils";
-import { ExternalLink, Clock, Building2, MapPin } from "lucide-react";
+import { ExternalLink, Clock, Building2, MapPin, Loader2 } from "lucide-react";
 
 function MatchScoreBar({ score }: { score: number }) {
   const color = score >= 70 ? "bg-green-500" : score >= 50 ? "bg-amber-500" : "bg-gray-300";
-  const label = score >= 70 ? "text-green-700" : score >= 50 ? "bg-amber-400" : "text-gray-500";
+  const label = score >= 70 ? "text-green-700" : score >= 50 ? "text-amber-600" : "text-gray-500";
   return (
     <div className="flex items-center gap-2 mt-2">
       <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
@@ -35,7 +35,7 @@ async function trackTender(tenderId: string) {
   }
 }
 
-export default function TenderCard({ tender }: { tender: Tender }) {
+export default function TenderCard({ tender, isScoring = false }: { tender: Tender; isScoring?: boolean }) {
   const days = daysToDeadline(tender.deadline);
 
   return (
@@ -81,9 +81,16 @@ export default function TenderCard({ tender }: { tender: Tender }) {
             <p className="text-xs text-muted-foreground line-clamp-2">{tender.ai_summary}</p>
           )}
 
-          {/* Match score bar */}
-          {tender.match_score !== null && tender.match_score !== undefined && (
+          {/* Match score */}
+          {tender.match_score !== null && tender.match_score !== undefined ? (
             <MatchScoreBar score={tender.match_score} />
+          ) : isScoring ? (
+            <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+              <Loader2 size={12} className="animate-spin" />
+              Scoring against your profile…
+            </div>
+          ) : (
+            <div className="mt-2 text-xs text-muted-foreground/60">Not scored yet</div>
           )}
         </div>
 
