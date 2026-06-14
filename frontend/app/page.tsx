@@ -134,19 +134,19 @@ export default function Home() {
         <div className="bs-hero">
           <div className="bs-eyebrow"><div className="bs-eyebrow-dot"></div>AI-Powered Tender Intelligence</div>
           <h1>See opportunities<br/><em>before everyone else.</em></h1>
-          <p className="bs-hero-sub">BidSight monitors GeM, CPPP, and 40+ procurement portals daily. AI scores every tender against your profile and drafts your proposal — so you bid smarter, not harder.</p>
+          <p className="bs-hero-sub">BidSight monitors GeM and CPPP today — expanding to India&apos;s state e-procurement portals. AI scores every tender against your profile, analyzes the documents, and drafts your proposal — so you bid smarter, not harder.</p>
           <div className="bs-hero-ctas">
             <Link href="/dashboard" className="bs-btn-primary">Start free trial</Link>
             <a href="#features" className="bs-btn-secondary">Watch 2-min demo</a>
           </div>
           <div className="bs-hero-proof">
-            <div><div className="bs-proof-num">40+</div><div className="bs-proof-label">Portals monitored daily</div></div>
+            <div><div className="bs-proof-num">2</div><div className="bs-proof-label">Govt portals scraped live</div></div>
             <div className="bs-proof-divider"></div>
-            <div><div className="bs-proof-num">92%</div><div className="bs-proof-label">Match accuracy</div></div>
+            <div><div className="bs-proof-num">0–100</div><div className="bs-proof-label">AI match score per tender</div></div>
             <div className="bs-proof-divider"></div>
-            <div><div className="bs-proof-num">4 hrs</div><div className="bs-proof-label">Saved per tender review</div></div>
+            <div><div className="bs-proof-num">Daily</div><div className="bs-proof-label">Automated scrape + alerts</div></div>
             <div className="bs-proof-divider"></div>
-            <div><div className="bs-proof-num">Minutes</div><div className="bs-proof-label">To first proposal draft</div></div>
+            <div><div className="bs-proof-num">Minutes</div><div className="bs-proof-label">To a full proposal draft</div></div>
           </div>
         </div>
 
@@ -160,8 +160,8 @@ export default function Home() {
               { icon: "🔍", cls: "green", title: "Opportunity discovery", desc: "Crawls GeM, CPPP, state portals, and PSU sites. New tenders appear in your feed within hours of posting." },
               { icon: "🧠", cls: "green", title: "AI match scoring", desc: "Every tender gets a 0–100 match score against your services, certifications, geography, and budget range." },
               { icon: "📄", cls: "amber", title: "Proposal assistant", desc: "Upload your company profile and past proposals. Generate a full technical proposal draft in minutes." },
-              { icon: "🏆", cls: "amber", title: "Competitor intelligence", desc: "See who's winning similar tenders, their bid patterns, and typical contract sizes." },
-              { icon: "🔔", cls: "gray", title: "Deadline monitoring", desc: "30-, 14-, 7-, 3-day and 24-hour reminders via email, Slack, or Teams. Never miss a closing date." },
+              { icon: "📑", cls: "amber", title: "Document analysis", desc: "Upload a tender PDF and AI extracts scope, eligibility, key dates, fees, and risks — with a go/skip verdict." },
+              { icon: "🔔", cls: "gray", title: "Deadline alerts", desc: "30/14/7/3/1-day reminders for tenders in your pipeline, in-app and via email. Never miss a closing date." },
               { icon: "📊", cls: "gray", title: "Bid analytics", desc: "Track win rate, submission rate, and revenue pipeline. Identify which categories you win most." },
             ].map((f) => (
               <div key={f.title} className="bs-feat">

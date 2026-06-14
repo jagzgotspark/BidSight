@@ -144,7 +144,7 @@ async def scrape_org(page, org: dict) -> list[Tender]:
                     deadline=_parse_cppp_date(deadline_raw),
                     deadline_raw=deadline_raw,
                     status=TenderStatus.ACTIVE,
-                    source_url=url,
+                    source_url="https://eprocure.gov.in/eprocure/app?page=FrontEndTendersByOrganisation&service=page",
                     eligibility_raw="",
                 )
             )

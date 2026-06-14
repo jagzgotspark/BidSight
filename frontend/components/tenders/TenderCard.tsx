@@ -1,7 +1,7 @@
 import { Tender } from "@/types/tender";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { formatBudget, daysToDeadline, categoryLabel, sourceLabel } from "@/lib/tenderUtils";
+import { formatBudget, daysToDeadline, categoryLabel, sourceLabel, tenderSourceUrl } from "@/lib/tenderUtils";
 import { ExternalLink, Clock, Building2, MapPin } from "lucide-react";
 
 function MatchScoreBar({ score }: { score: number }) {
@@ -45,12 +45,15 @@ export default function TenderCard({ tender }: { tender: Tender }) {
           {/* Title */}
           <div className="flex items-start gap-2">
             <h3 className="font-medium text-sm leading-snug">{tender.title}</h3>
-            {tender.source_url && (
-              <a href={tender.source_url} target="_blank" rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground mt-0.5 flex-shrink-0">
-                <ExternalLink size={13} />
-              </a>
-            )}
+            <a
+              href={tenderSourceUrl(tender)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Find on ${sourceLabel(tender.source)} — tender ID ${tender.tender_id}`}
+              className="text-muted-foreground hover:text-foreground mt-0.5 flex-shrink-0"
+            >
+              <ExternalLink size={13} />
+            </a>
           </div>
 
           {/* Meta */}

@@ -33,3 +33,15 @@ export function categoryLabel(category: string): string {
 export function sourceLabel(source: string): string {
   return source === "gem" ? "GeM" : "CPPP";
 }
+
+export function tenderSourceUrl(tender: Tender): string {
+  // Portal deep-links are session-bound and expire, so we send users to the
+  // portal's stable search page where they can look the tender up by ID.
+  if (tender.source === "cppp") {
+    return "https://eprocure.gov.in/eprocure/app?page=FrontEndTendersByOrganisation&service=page";
+  }
+  if (tender.source === "gem") {
+    return "https://bidplus.gem.gov.in/all-bids";
+  }
+  return tender.source_url || "https://eprocure.gov.in";
+}

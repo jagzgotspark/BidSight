@@ -5,7 +5,7 @@ import api from "@/lib/api";
 import { Tender } from "@/types/tender";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { formatBudget, daysToDeadline, categoryLabel, sourceLabel } from "@/lib/tenderUtils";
+import { formatBudget, daysToDeadline, categoryLabel, sourceLabel,tenderSourceUrl } from "@/lib/tenderUtils";
 import { ArrowLeft, ExternalLink, Clock, Building2, MapPin } from "lucide-react";
 
 function MatchScoreSection({ score, reasoning }: { score: number; reasoning: string | null }) {
@@ -66,8 +66,10 @@ export default function TenderDetailPage() {
         <span className="text-xl font-semibold tracking-tight">BidSight</span>
         <nav className="flex gap-4 text-sm text-muted-foreground">
           <a href="/dashboard" className="hover:text-foreground">Tenders</a>
-          <span>Pipeline</span>
-          <span>Analytics</span>
+          <a href="/dashboard/pipeline" className="hover:text-foreground">Pipeline</a>
+          <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
+          <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
+          <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
         </nav>
       </header>
 
@@ -81,12 +83,14 @@ export default function TenderDetailPage() {
         <div className="space-y-2">
           <div className="flex items-start gap-3">
             <h1 className="text-xl font-semibold leading-snug flex-1">{tender.title}</h1>
-            {tender.source_url && (
-              <a href={tender.source_url} target="_blank" rel="noopener noreferrer"
-                className="text-muted-foreground hover:text-foreground mt-1 flex-shrink-0">
-                <ExternalLink size={15} />
-              </a>
-            )}
+            href={tenderSourceUrl(tender)}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`Find on ${sourceLabel(tender.source)} — tender ID ${tender.tender_id}`}
+              className="text-muted-foreground hover:text-foreground mt-1 flex-shrink-0"
+            >
+              <ExternalLink size={15} />
+            </a>
           </div>
           <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
             {tender.authority && (
