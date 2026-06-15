@@ -102,6 +102,20 @@ def check_deadline_alerts() -> dict:
     finally:
         db.close()
 
+@app.task(name="alerts.tasks.check_match_alerts")
+def check_match_alerts() -> dict:
+    """Score recent tenders and alert on new high-fit matches."""
+    import asyncio
+    from app.database import SessionLocal
+    from app.services.alert_service import create_match_alerts
+    db = SessionLocal()
+    try:
+        result = asyncio.run(create_match_alerts(db))
+        log.info("match_alerts: %s", result)
+        return result
+    finally:
+        db.close()
+
 app.conf.beat_schedule = {
     "scrape-gem-every-6h": {
         "task": "scraper.tasks.scrape_gem_portal",
@@ -115,5 +129,9 @@ app.conf.beat_schedule = {
     "deadline-alerts-daily": {
         "task": "alerts.tasks.check_deadline_alerts",
         "schedule": crontab(hour=2, minute=30),  # 08:00 IST
+    },
+    "match-alerts-6h": {
+        "task": "alerts.tasks.check_match_alerts",
+        "schedule": crontab(hour="*/6", minute=30),
     },
 }

@@ -5,12 +5,14 @@ from datetime import datetime
 
 class AlertResponse(BaseModel):
     id: str
-    bid_id: str
+    bid_id: Optional[str]
     tender_id: Optional[str]
     tender_title: str
     deadline: Optional[datetime]
     days_left: Optional[int]
     threshold: int
+    kind: str
+    score: Optional[int]
     message: str
     is_read: bool
     created_at: datetime

@@ -13,6 +13,8 @@ class Alert(Base):
     deadline = Column(DateTime, nullable=True)
     days_left = Column(Integer, nullable=True)
     threshold = Column(Integer, nullable=False)     # bucket that triggered it
+    kind = Column(String, default="deadline", server_default="deadline", nullable=False)
+    score = Column(Integer, nullable=True)   # the match score, for "match" alerts
     message = Column(String, default="")
     channel = Column(String, default="in_app")
     is_read = Column(Boolean, default=False)

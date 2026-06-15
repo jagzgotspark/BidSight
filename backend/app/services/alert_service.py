@@ -1,5 +1,6 @@
 from __future__ import annotations
-
+import asyncio
+from datetime import datetime, timedelta
 import math
 import os
 import smtplib
@@ -106,3 +107,83 @@ def scan_and_create_alerts(db: Session) -> dict:
 
     db.commit()
     return {"bids_checked": len(bids), "alerts_created": created}
+
+MATCH_THRESHOLD = 70
+
+
+async def create_match_alerts(
+    db: Session,
+    user_id: str = "demo_user",
+    threshold: int = MATCH_THRESHOLD,
+    since_days: int = 7,
+) -> dict:
+    """Score recent unscored tenders and alert on high-fit new matches."""
+    from app.models.company_profile import CompanyProfile
+    from app.services.match_service import score_tender
+
+    profile = db.query(CompanyProfile).filter(CompanyProfile.user_id == user_id).first()
+    if not profile:
+        return {"error": "No company profile set up yet."}
+
+    cutoff = datetime.utcnow() - timedelta(days=since_days)
+    tenders = (
+        db.query(Tender)
+        .filter(Tender.status == "active", Tender.created_at >= cutoff)
+        .all()
+    )
+
+    # Ensure recent tenders are scored
+    scored = 0
+    for t in tenders:
+        if t.match_score is None:
+            try:
+                result = await score_tender(t, profile)
+                t.match_score = result["score"]
+                t.match_reasoning = result.get("reasoning", "")
+                scored += 1
+            except Exception as exc:
+                log.warning("match_alert_scoring_failed", error=str(exc))
+            await asyncio.sleep(0.5)
+    db.commit()
+
+    # Create alerts for high matches (deduped via bid_id="match:<id>")
+    now = datetime.utcnow()
+    created = 0
+    for t in tenders:
+        if t.match_score is None or t.match_score < threshold:
+            continue
+
+        bid_key = f"match:{t.id}"
+        exists = (
+            db.query(Alert)
+            .filter(Alert.bid_id == bid_key, Alert.threshold == threshold)
+            .first()
+        )
+        if exists:
+            continue
+
+        days_left = None
+        if t.deadline:
+            secs = (t.deadline - now).total_seconds()
+            days_left = max(0, math.ceil(secs / 86400)) if secs > 0 else 0
+
+        alert = Alert(
+            id=str(uuid4()),
+            user_id=user_id,
+            bid_id=bid_key,
+            tender_id=t.id,
+            tender_title=t.title,
+            deadline=t.deadline,
+            days_left=days_left,
+            threshold=threshold,
+            kind="match",
+            score=t.match_score,
+            message=f'New {t.match_score}% match: "{t.title[:80]}"',
+            channel="in_app",
+        )
+        db.add(alert)
+        alert.emailed = _maybe_send_email(db, alert)
+        created += 1
+
+    db.commit()
+    return {"recent_tenders": len(tenders), "scored": scored, "match_alerts_created": created}

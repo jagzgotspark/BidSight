@@ -65,7 +65,8 @@ export default function AlertsPage() {
 
         <div className="space-y-3">
           {alerts?.map((a) => {
-            const c = thresholdColor(a.days_left);
+            const isMatch = a.kind === "match";
+            const c = isMatch ? { bg: "#E1F5EE", fg: "#0F6E56" } : thresholdColor(a.days_left);
             return (
               <Card
                 key={a.id}
@@ -77,7 +78,9 @@ export default function AlertsPage() {
                       className="text-xs font-medium px-2 py-0.5 rounded-full"
                       style={{ background: c.bg, color: c.fg }}
                     >
-                      {a.days_left === 0
+                      {isMatch
+                        ? `New ${a.score}% match`
+                        : a.days_left === 0
                         ? "Closes today"
                         : a.days_left === 1
                         ? "1 day left"

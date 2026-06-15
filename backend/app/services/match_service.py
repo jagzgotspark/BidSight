@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import asyncio
 import os
 import httpx
 from dotenv import load_dotenv
@@ -62,9 +63,18 @@ Respond ONLY with valid JSON, no markdown, no extra text:
     }
 
     async with httpx.AsyncClient(timeout=30) as client:
-        response = await client.post(GROQ_URL, headers=headers, json=body)
-        response.raise_for_status()
-        data = response.json()
+        for attempt in range(4):
+            response = await client.post(GROQ_URL, headers=headers, json=body)
+            if response.status_code == 429:
+                # Respect Retry-After if present, else exponential backoff
+                wait = float(response.headers.get("retry-after", 2 ** attempt))
+                await asyncio.sleep(min(wait, 15))
+                continue
+            response.raise_for_status()
+            data = response.json()
+            break
+        else:
+            raise RuntimeError("Groq rate limit: retries exhausted")
 
     text = data["choices"][0]["message"]["content"].strip()
 

@@ -9,4 +9,6 @@ export interface Alert {
   message: string;
   is_read: boolean;
   created_at: string;
+  kind: string;
+  score: number | null;
 }
