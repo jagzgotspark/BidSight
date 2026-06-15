@@ -99,7 +99,7 @@ export default function TenderFeed() {
       </div>
 
       {isLoading && <p className="text-sm text-muted-foreground py-12 text-center">Loading tenders...</p>}
-      {isError && <p className="text-sm text-destructive py-12 text-center">Could not connect to API. Make sure the backend is running.</p>}
+      {isError && <p className="text-sm text-destructive py-12 text-center">Could not connect to the API. Make sure the backend is running.</p>}
       {data && data.items.length === 0 && (
         <p className="text-sm text-muted-foreground py-12 text-center">No tenders yet. Run the scraper to populate data.</p>
       )}

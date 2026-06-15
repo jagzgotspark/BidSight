@@ -11,6 +11,7 @@ export default function DashboardPage() {
           <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
           <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
           <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
+          <a href="/dashboard/settings" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Settings</a>
         </nav>
       </header>
       <main className="max-w-6xl mx-auto px-6 py-8">

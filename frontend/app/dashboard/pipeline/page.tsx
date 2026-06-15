@@ -57,6 +57,8 @@ export default function PipelinePage() {
             <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
             <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
             <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
+            <a href="/dashboard/settings" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Settings</a>
+        
           </nav>
         </header>
         <div className="flex items-center justify-center h-64 text-muted-foreground text-sm">
@@ -76,6 +78,8 @@ export default function PipelinePage() {
           <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
           <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
           <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
+          <a href="/dashboard/settings" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Settings</a>
+        
         </nav>
       </header>
 

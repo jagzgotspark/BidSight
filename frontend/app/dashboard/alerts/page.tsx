@@ -121,6 +121,8 @@ function Header({ unread }: { unread: number }) {
         <a href="/dashboard/pipeline" className="hover:text-foreground">Pipeline</a>
         <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
         <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
+        <a href="/dashboard/settings" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Settings</a>
+        
         <span className="text-foreground font-medium flex items-center gap-1">
           Alerts
           {unread > 0 && (
