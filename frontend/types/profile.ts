@@ -16,7 +16,7 @@ export interface CompanyProfileCreate {
   services: string;
   tech_stack: string;
   certifications: string;
-  team_size: number | null;
+  team_size: string;
   geography: string;
   min_budget: string;
   max_budget: string;

@@ -10,7 +10,7 @@ const EMPTY_FORM: CompanyProfileCreate = {
   services: "",
   tech_stack: "",
   certifications: "",
-  team_size: null,
+  team_size: "",
   geography: "",
   min_budget: "",
   max_budget: "",
@@ -32,7 +32,7 @@ export default function SettingsPage() {
           services: data.services ?? "",
           tech_stack: data.tech_stack ?? "",
           certifications: data.certifications ?? "",
-          team_size: data.team_size ?? null,
+          team_size: String(data.team_size ?? ""),
           geography: data.geography ?? "",
           min_budget: data.min_budget ?? "",
           max_budget: data.max_budget ?? "",
@@ -53,13 +53,14 @@ export default function SettingsPage() {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === "team_size" ? (value === "" ? null : Number(value)) : value,
+      [name]: value,
     }));
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSavedOnce(false);
+    console.log("Submitting form:", JSON.stringify(form));
     mutation.mutate(form);
   }
 
@@ -138,11 +139,9 @@ export default function SettingsPage() {
             <Field label="Team size" hint="Approximate number of full-time employees.">
               <input
                 name="team_size"
-                type="number"
-                min={1}
-                value={form.team_size ?? ""}
+                value={form.team_size}
                 onChange={handleChange}
-                placeholder="e.g. 45"
+                placeholder="e.g. small / 45 / 200+"
               />
             </Field>
 
