@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user
 from app.models.company_profile import CompanyProfile
 from app.models.tender import Tender
 from app.schemas.profile import (
@@ -19,8 +20,8 @@ router = APIRouter(prefix="/match", tags=["match"])
 @router.post("/profile", response_model=CompanyProfileResponse)
 def create_or_update_profile(
     data: CompanyProfileCreate,
-    user_id: str = "demo_user",  # Replace with Clerk auth later
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """Create or update a company profile."""
     profile = db.query(CompanyProfile).filter(
@@ -45,8 +46,8 @@ def create_or_update_profile(
 
 @router.get("/profile", response_model=CompanyProfileResponse)
 def get_profile(
-    user_id: str = "demo_user",
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """Get the current user's company profile."""
     profile = db.query(CompanyProfile).filter(
@@ -59,9 +60,9 @@ def get_profile(
 
 @router.get("/score", response_model=list[MatchScoreResponse])
 def get_match_scores(
-    user_id: str = "demo_user",
     limit: int = 10,
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """Score all active tenders against the user's company profile."""
     profile = db.query(CompanyProfile).filter(
@@ -89,9 +90,8 @@ def get_match_scores(
 
 @router.post("/score/{tender_id}")
 async def score_single_tender(
-    tender_id: str,
-    user_id: str = "demo_user",
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """Score one tender against the profile and persist the result."""
     profile = db.query(CompanyProfile).filter(

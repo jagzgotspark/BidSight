@@ -3,8 +3,8 @@ import asyncio
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from typing import Optional
-
 from app.database import get_db
+from app.dependencies.auth import get_current_user
 from app.models.proposal import Proposal
 from app.models.tender import Tender
 from app.models.company_profile import CompanyProfile
@@ -19,8 +19,8 @@ async def generate_proposal_endpoint(
     past_projects: str = Form(default=""),
     additional_notes: str = Form(default=""),
     company_profile_pdf: Optional[UploadFile] = File(default=None),
-    user_id: str = "demo_user",
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """
     Generate a full proposal for a tender.

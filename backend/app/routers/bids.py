@@ -1,8 +1,8 @@
 import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
 from app.database import get_db
+from app.dependencies.auth import get_current_user
 from app.models.bid import Bid
 from app.models.tender import Tender
 from app.models.user import User  # needed for FK resolution
@@ -35,9 +35,9 @@ def _enrich_bid(bid: Bid, db: Session) -> dict:
 
 @router.get("/", response_model=list[BidResponse])
 def list_bids(
-    user_id: str = "demo_user",
     stage: str = None,
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """Get all bids for the user, optionally filtered by stage."""
     query = db.query(Bid).filter(Bid.user_id == user_id)
@@ -50,8 +50,8 @@ def list_bids(
 @router.post("/", response_model=BidResponse)
 def create_bid(
     data: BidCreate,
-    user_id: str = "demo_user",
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """Add a tender to the bid pipeline."""
     # Check tender exists
@@ -85,8 +85,8 @@ def create_bid(
 def update_bid(
     bid_id: str,
     data: BidUpdate,
-    user_id: str = "demo_user",
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """Update bid stage or notes."""
     bid = db.query(Bid).filter(
@@ -111,8 +111,8 @@ def update_bid(
 @router.delete("/{bid_id}")
 def delete_bid(
     bid_id: str,
-    user_id: str = "demo_user",
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """Remove a tender from the pipeline."""
     bid = db.query(Bid).filter(
@@ -129,8 +129,8 @@ def delete_bid(
 
 @router.get("/pipeline/summary")
 def pipeline_summary(
-    user_id: str = "demo_user",
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     """Get count of bids per stage."""
     bids = db.query(Bid).filter(Bid.user_id == user_id).all()
