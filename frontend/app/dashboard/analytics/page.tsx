@@ -43,6 +43,17 @@ export default function AnalyticsPage() {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="flex items-center justify-center h-64 text-destructive text-sm">
+          Could not load analytics. Make sure the backend is running.
+        </div>
+      </div>
+    );
+  }
+
   const categoryData = data?.by_category?.map((c: any) => ({
     name: CATEGORY_LABELS[c.category] || c.category,
     count: c.count,
@@ -193,9 +204,9 @@ function Header() {
       <span className="text-xl font-semibold tracking-tight">BidSight</span>
       <nav className="flex gap-4 text-sm text-muted-foreground">
         <a href="/dashboard" className="hover:text-foreground">Tenders</a>
-        <span className="text-foreground font-medium">Pipeline</span>
+        <a href="/dashboard/pipeline" className="hover:text-foreground">Pipeline</a>
         <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
-        <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
+        <span className="text-foreground font-medium">Analytics</span>
         <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
         <a href="/dashboard/settings" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Settings</a>
         

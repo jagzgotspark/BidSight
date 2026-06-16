@@ -13,7 +13,7 @@ export default function PipelinePage() {
   const queryClient = useQueryClient();
   const [draggingId, setDraggingId] = useState<string | null>(null);
 
-  const { data: bids = [], isLoading } = useQuery<Bid[]>({
+  const { data: bids = [], isLoading, isError } = useQuery<Bid[]>({
     queryKey: ["bids"],
     queryFn: async () => {
       const res = await api.get("/bids/");
@@ -45,6 +45,27 @@ export default function PipelinePage() {
 
   const bidsByStage = (stageId: string) =>
     bids.filter((b) => b.stage === stageId);
+
+  if (isError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="border-b px-6 py-4 flex items-center justify-between">
+          <span className="text-xl font-semibold tracking-tight">BidSight</span>
+          <nav className="flex gap-4 text-sm text-muted-foreground">
+            <a href="/dashboard" className="hover:text-foreground">Tenders</a>
+            <span className="text-foreground font-medium">Pipeline</span>
+            <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
+            <a href="/dashboard/analytics" className="hover:text-foreground">Analytics</a>
+            <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
+            <a href="/dashboard/settings" className="hover:text-foreground">Settings</a>
+          </nav>
+        </header>
+        <div className="flex items-center justify-center h-64 text-destructive text-sm">
+          Could not load pipeline. Make sure the backend is running.
+        </div>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
