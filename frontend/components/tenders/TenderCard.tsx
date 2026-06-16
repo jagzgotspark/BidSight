@@ -39,8 +39,8 @@ export default function TenderCard({ tender, isScoring = false }: { tender: Tend
   const days = daysToDeadline(tender.deadline);
 
   return (
-    <Card className="p-5 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-4">
+    <Card className="p-4 hover:shadow-md transition-shadow">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div className="flex-1 space-y-2">
           {/* Title */}
           <div className="flex items-start gap-2">
@@ -95,9 +95,9 @@ export default function TenderCard({ tender, isScoring = false }: { tender: Tend
         </div>
 
         {/* Right column */}
-        <div className="flex flex-col items-end gap-2 flex-shrink-0">
+        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 flex-shrink-0">
           <span className="text-sm font-semibold">{formatBudget(tender)}</span>
-          <div className="flex gap-1.5 flex-wrap justify-end">
+          <div className="flex gap-1.5 flex-wrap sm:justify-end">
             <Badge variant="outline" className="text-xs">{sourceLabel(tender.source)}</Badge>
             <Badge variant="secondary" className="text-xs">{categoryLabel(tender.category)}</Badge>
             {days !== null && days <= 7 && days > 0 && (
@@ -106,7 +106,7 @@ export default function TenderCard({ tender, isScoring = false }: { tender: Tend
           </div>
           <button
             onClick={() => trackTender(tender.id)}
-            className="text-xs text-muted-foreground hover:text-foreground underline mt-1"
+            className="text-xs text-muted-foreground hover:text-foreground underline"
           >
             + Track
           </button>

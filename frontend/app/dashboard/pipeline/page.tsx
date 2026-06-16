@@ -51,7 +51,7 @@ export default function PipelinePage() {
       <div className="min-h-screen bg-background">
         <header className="border-b px-6 py-4 flex items-center justify-between">
           <span className="text-xl font-semibold tracking-tight">BidSight</span>
-          <nav className="flex gap-4 text-sm text-muted-foreground">
+          <nav className="flex gap-3 text-sm text-muted-foreground overflow-x-auto">
             <a href="/dashboard" className="hover:text-foreground">Tenders</a>
             <span className="text-foreground font-medium">Pipeline</span>
             <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>

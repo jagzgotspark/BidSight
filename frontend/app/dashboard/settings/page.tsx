@@ -68,7 +68,7 @@ export default function SettingsPage() {
     <div style={{ minHeight: "100vh", backgroundColor: "#0a0a0a", color: "#e5e5e5" }}>
       {/* Nav */}
       <header style={{ borderBottom: "1px solid #1f1f1f", padding: "0 2rem" }}>
-        <nav style={{ display: "flex", gap: "2rem", alignItems: "center", height: "56px", maxWidth: "1200px", margin: "0 auto" }}>
+        <nav style={{ display: "flex", gap: "1.5rem", alignItems: "center", height: "56px", maxWidth: "1200px", margin: "0 auto", overflowX: "auto" }}>
           <a href="/dashboard" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Tenders</a>
           <a href="/dashboard/pipeline" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Pipeline</a>
           <a href="/dashboard/proposals" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Proposals</a>
