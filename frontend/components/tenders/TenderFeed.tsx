@@ -1,7 +1,10 @@
 "use client";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 import { Tender, TenderListResponse } from "@/types/tender";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 import TenderCard from "./TenderCard";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -14,17 +17,22 @@ export default function TenderFeed() {
   const [scoringId, setScoringId] = useState<string | null>(null);
   const attempted = useRef<Set<string>>(new Set());
   const qc = useQueryClient();
+  const { getToken } = useAuth();
 
   const queryKey = ["tenders", search, source, category];
 
   const { data, isLoading, isError } = useQuery<TenderListResponse>({
     queryKey,
     queryFn: async () => {
+      const token = await getToken();
       const params: Record<string, string> = {};
       if (search) params.search = search;
       if (source !== "all") params.source = source;
       if (category !== "all") params.category = category;
-      const res = await api.get("/tenders/", { params });
+      const res = await axios.get(`${BASE}/tenders/`, {
+        params,
+        headers: { Authorization: `Bearer ${token}` },
+      });
       return res.data;
     },
   });
@@ -46,7 +54,10 @@ export default function TenderFeed() {
         attempted.current.add(t.id);
         setScoringId(t.id);
         try {
-          const res = await api.post(`/match/score/${t.id}`);
+          const token = await getToken();
+          const res = await axios.post(`${BASE}/match/score/${t.id}`, {}, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
           const { match_score, match_reasoning } = res.data;
           qc.setQueryData<TenderListResponse>(queryKey, (old) => {
             if (!old) return old;
