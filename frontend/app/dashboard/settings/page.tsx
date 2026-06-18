@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
 import { getProfile, saveProfile } from "../../../lib/api";
 import type { CompanyProfileCreate } from "../../../types/profile";
 
@@ -20,11 +21,15 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<CompanyProfileCreate>(EMPTY_FORM);
   const [savedOnce, setSavedOnce] = useState(false);
+  const { getToken } = useAuth();
 
   // Pre-fill form when profile loads
   const { isLoading } = useQuery({
     queryKey: ["profile"],
-    queryFn: getProfile,
+    queryFn: async () => {
+      const token = await getToken();
+      return getProfile(token);
+    },
     onSuccess: (data) => {
       if (data) {
         setForm({
@@ -42,7 +47,10 @@ export default function SettingsPage() {
   });
 
   const mutation = useMutation({
-    mutationFn: saveProfile,
+    mutationFn: async (data: CompanyProfileCreate) => {
+      const token = await getToken();
+      return saveProfile(token, data);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       setSavedOnce(true);
