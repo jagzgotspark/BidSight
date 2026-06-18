@@ -36,7 +36,7 @@ _CATEGORY_KEYWORDS: dict[TenderCategory, list[str]] = {
     TenderCategory.DEFENSE_MARINE: ["submarine", "naval", "marine unit", "battery type", "tps", "ugssn", "kpcl", "defence", "armed forces"],
     TenderCategory.LIBRARY_PUBLISHING: ["database subscription", "library", "journal", "publication", "signage"],
 }
-}
+
 
 
 def _classify(title: str, description: str = "") -> TenderCategory:
