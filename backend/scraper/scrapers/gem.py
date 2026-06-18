@@ -11,12 +11,31 @@ from scraper.models.tender import Tender, TenderCategory, TenderSource, TenderSt
 from scraper.scrapers.base import BaseScraper
 
 _CATEGORY_KEYWORDS: dict[TenderCategory, list[str]] = {
-    TenderCategory.IT_SOFTWARE: ["software", "erp", "mobile app", "web", "portal", "application"],
-    TenderCategory.CLOUD: ["cloud", "aws", "azure", "saas", "hosting", "server"],
-    TenderCategory.AI_ML: ["artificial intelligence", "machine learning", " ai ", "ml", "data science", "analytics"],
-    TenderCategory.CYBERSECURITY: ["cyber", "security", "vapt", "penetration", "firewall"],
-    TenderCategory.CONSULTING: ["consulting", "advisory", "consultancy", "assessment"],
-    TenderCategory.INFRASTRUCTURE: ["network", "cabling", "datacenter", "data centre", "storage"],
+    # IT-related — checked first since "security" etc. could clash with physical security services
+    TenderCategory.IT_SOFTWARE: ["software", "erp", "mobile app", "web", "portal", "application", "crm"],
+    TenderCategory.CLOUD: ["cloud", "aws", "azure", "saas", "hosting", "data center service"],
+    TenderCategory.AI_ML: ["artificial intelligence", "machine learning", " ai ", "ml model", "data science", "analytics platform"],
+    TenderCategory.CYBERSECURITY: ["cyber security", "vapt", "penetration test", "firewall", "soc service"],
+    TenderCategory.CONSULTING: ["consulting", "advisory", "consultancy", "assessment study"],
+    TenderCategory.INFRASTRUCTURE: ["network", "cabling", "datacenter", "data centre", "it storage"],
+    TenderCategory.HARDWARE: ["laptop", "desktop", "computer", "printer", "server hardware", "ups", "projector"],
+
+    # Non-IT — the bulk of real GeM volume
+    TenderCategory.MEDICAL: ["medical", "hospital", "surgical", "pharma", "drug", "tab.", "syringe", "catheter", "diagnostic", "x-ray", "ventilator", "ambulance", "laryngoscope", "endoscop", "laparoscop", "airway scope", "nerve monitoring", "elispot", "antibiotic", "biochemistry", "microbiology", "mr imaging", "gamma knife", "aiims", "clinical", "operative", "patient", "icu", "dialysis", "oxygen concentrator", "defibrillator"],
+    TenderCategory.CONSTRUCTION: ["construction", "civil work", "building work", "renovation", "road work", "infrastructure work", "tender for construction"],
+    TenderCategory.EQUIPMENT_MACHINERY: ["earth moving", "excavator", "dumper", "tractor", "crane", "generator", "compressor", "machine", "machinery", "equipment hire"],
+    TenderCategory.VEHICLES: ["vehicle", "bus", "car", "ambulance", "two wheeler", "motor cycle", "tipper"],
+    TenderCategory.FURNITURE: ["furniture", "chair", "table", "almirah", "cabinet", "desk", "sofa"],
+    TenderCategory.ELECTRICAL: ["electrical", "wiring", "transformer", "switchgear", "cable", "led light", "solar panel"],
+    TenderCategory.TEXTILES_APPAREL: ["uniform", "textile", "fabric", "garment", "apparel", "shoes", "footwear"],
+    TenderCategory.FOOD_CATERING: ["catering", "food supply", "ration", "canteen", "meal"],
+    TenderCategory.OFFICE_SUPPLIES: ["stationery", "paper", "printing service", "office supply"],
+    TenderCategory.SECURITY_SERVICES: ["security guard", "security service", "manpower security", "watchman"],
+    TenderCategory.MAINTENANCE_AMC: ["amc", "annual maintenance", "cmc", "housekeeping", "facility management", "repair and overhauling", "repair, maintenance", "overhaul"],
+    TenderCategory.INDUSTRIAL_PARTS: ["bearing", "valve", "gasket", "shelving rack", "ballast block", "union 1/2", "spare part", "industrial component", "vacuum cleaner", "cylinder", "skid steer"],
+    TenderCategory.DEFENSE_MARINE: ["submarine", "naval", "marine unit", "battery type", "tps", "ugssn", "kpcl", "defence", "armed forces"],
+    TenderCategory.LIBRARY_PUBLISHING: ["database subscription", "library", "journal", "publication", "signage"],
+}
 }
 
 
