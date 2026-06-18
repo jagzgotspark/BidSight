@@ -1,8 +1,11 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 import { Bid, STAGES } from "@/types/bid";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 import { daysToDeadline } from "@/lib/tenderUtils";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -12,18 +15,25 @@ import { useState } from "react";
 export default function PipelinePage() {
   const queryClient = useQueryClient();
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const { getToken } = useAuth();
 
   const { data: bids = [], isLoading, isError } = useQuery<Bid[]>({
     queryKey: ["bids"],
     queryFn: async () => {
-      const res = await api.get("/bids/");
+      const token = await getToken();
+      const res = await axios.get(`${BASE}/bids/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       return res.data;
     },
   });
 
   const updateBid = useMutation({
     mutationFn: async ({ id, stage }: { id: string; stage: string }) => {
-      const res = await api.patch(`/bids/${id}`, { stage });
+      const token = await getToken();
+      const res = await axios.patch(`${BASE}/bids/${id}`, { stage }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       return res.data;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["bids"] }),
@@ -31,7 +41,10 @@ export default function PipelinePage() {
 
   const deleteBid = useMutation({
     mutationFn: async (id: string) => {
-      await api.delete(`/bids/${id}`);
+      const token = await getToken();
+      await axios.delete(`${BASE}/bids/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["bids"] }),
   });
