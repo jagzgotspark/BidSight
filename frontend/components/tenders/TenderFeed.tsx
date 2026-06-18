@@ -105,6 +105,22 @@ export default function TenderFeed() {
             <SelectItem value="cybersecurity">Cybersecurity</SelectItem>
             <SelectItem value="consulting">Consulting</SelectItem>
             <SelectItem value="infrastructure">Infrastructure</SelectItem>
+            <SelectItem value="hardware">Hardware</SelectItem>
+            <SelectItem value="medical">Medical</SelectItem>
+            <SelectItem value="construction">Construction</SelectItem>
+            <SelectItem value="equipment_machinery">Equipment & Machinery</SelectItem>
+            <SelectItem value="vehicles">Vehicles</SelectItem>
+            <SelectItem value="furniture">Furniture</SelectItem>
+            <SelectItem value="electrical">Electrical</SelectItem>
+            <SelectItem value="textiles_apparel">Textiles & Apparel</SelectItem>
+            <SelectItem value="food_catering">Food & Catering</SelectItem>
+            <SelectItem value="office_supplies">Office Supplies</SelectItem>
+            <SelectItem value="security_services">Security Services</SelectItem>
+            <SelectItem value="maintenance_amc">Maintenance / AMC</SelectItem>
+            <SelectItem value="industrial_parts">Industrial Parts</SelectItem>
+            <SelectItem value="defense_marine">Defense & Marine</SelectItem>
+            <SelectItem value="library_publishing">Library & Publishing</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
           </SelectContent>
         </Select>
       </div>
