@@ -1,9 +1,12 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 import { Alert } from "@/types/alert";
 import { Card } from "@/components/ui/card";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 function thresholdColor(days: number | null) {
   if (days === null) return { bg: "#F1EFE8", fg: "#444441" };
@@ -14,19 +17,36 @@ function thresholdColor(days: number | null) {
 
 export default function AlertsPage() {
   const qc = useQueryClient();
+  const { getToken } = useAuth();
 
   const { data: alerts, isLoading } = useQuery<Alert[]>({
     queryKey: ["alerts"],
-    queryFn: async () => (await api.get("/alerts/")).data,
+    queryFn: async () => {
+      const token = await getToken();
+      const res = await axios.get(`${BASE}/alerts/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      return res.data;
+    },
   });
 
   const markRead = useMutation({
-    mutationFn: async (id: string) => api.post(`/alerts/${id}/read`),
+    mutationFn: async (id: string) => {
+      const token = await getToken();
+      return axios.post(`${BASE}/alerts/${id}/read`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["alerts"] }),
   });
 
   const markAll = useMutation({
-    mutationFn: async () => api.post("/alerts/read-all"),
+    mutationFn: async () => {
+      const token = await getToken();
+      return axios.post(`${BASE}/alerts/read-all`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["alerts"] }),
   });
 
