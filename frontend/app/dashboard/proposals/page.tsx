@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import api from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 import { TenderListResponse } from "@/types/tender";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 
@@ -15,11 +18,16 @@ export default function ProposalsPage() {
   const [generating, setGenerating] = useState(false);
   const [proposal, setProposal] = useState<any | null>(null);
   const [error, setError] = useState("");
+  const { getToken } = useAuth();
 
   const { data: tenders } = useQuery<TenderListResponse>({
     queryKey: ["tenders-for-proposal"],
     queryFn: async () => {
-      const res = await api.get("/tenders/", { params: { per_page: 50 } });
+      const token = await getToken();
+      const res = await axios.get(`${BASE}/tenders/`, {
+        params: { per_page: 50 },
+        headers: { Authorization: `Bearer ${token}` },
+      });
       return res.data;
     },
   });
@@ -42,8 +50,10 @@ export default function ProposalsPage() {
         formData.append("company_profile_pdf", pdfFile);
       }
 
-      const res = await fetch("http://localhost:8000/api/v1/proposals/generate", {
+      const token = await getToken();
+      const res = await fetch(`${BASE}/proposals/generate`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       });
 

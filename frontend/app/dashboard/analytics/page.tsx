@@ -1,8 +1,11 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import api from "@/lib/api";
+import { useAuth } from "@clerk/nextjs";
+import axios from "axios";
 import { Card } from "@/components/ui/card";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -24,10 +27,14 @@ const STAGE_ORDER = ["new", "interested", "evaluating", "drafting", "submitted",
 const COLORS = ["#1D9E75", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#6B7280"];
 
 export default function AnalyticsPage() {
-  const { data, isLoading } = useQuery({
+  const { getToken } = useAuth();
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["analytics"],
     queryFn: async () => {
-      const res = await api.get("/analytics/overview");
+      const token = await getToken();
+      const res = await axios.get(`${BASE}/analytics/overview`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       return res.data;
     },
   });
