@@ -1,8 +1,12 @@
+"use client";
 import { Tender } from "@/types/tender";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatBudget, daysToDeadline, categoryLabel, sourceLabel, tenderSourceUrl } from "@/lib/tenderUtils";
 import { ExternalLink, Clock, Building2, MapPin, Loader2 } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
+
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 
 function MatchScoreBar({ score }: { score: number }) {
   const color = score >= 70 ? "bg-green-500" : score >= 50 ? "bg-amber-500" : "bg-gray-300";
@@ -17,26 +21,31 @@ function MatchScoreBar({ score }: { score: number }) {
   );
 }
 
-async function trackTender(tenderId: string) {
-  try {
-    const res = await fetch("http://localhost:8000/api/v1/bids/", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tender_id: tenderId }),
-    });
-    if (res.ok) {
-      alert("Added to pipeline!");
-    } else {
-      const data = await res.json();
-      alert(data.detail || "Error adding to pipeline.");
-    }
-  } catch {
-    alert("Could not connect to API.");
-  }
-}
-
 export default function TenderCard({ tender, isScoring = false }: { tender: Tender; isScoring?: boolean }) {
   const days = daysToDeadline(tender.deadline);
+  const { getToken } = useAuth();
+
+  async function trackTender(tenderId: string) {
+    try {
+      const token = await getToken();
+      const res = await fetch(`${BASE}/bids/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ tender_id: tenderId }),
+      });
+      if (res.ok) {
+        alert("Added to pipeline!");
+      } else {
+        const data = await res.json();
+        alert(data.detail || "Error adding to pipeline.");
+      }
+    } catch {
+      alert("Could not connect to API.");
+    }
+  }
 
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
