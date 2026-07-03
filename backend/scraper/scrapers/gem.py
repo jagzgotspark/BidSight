@@ -21,8 +21,8 @@ _CATEGORY_KEYWORDS: dict[TenderCategory, list[str]] = {
     TenderCategory.HARDWARE: ["laptop", "desktop", "computer", "printer", "server hardware", "ups", "projector"],
 
     # Non-IT — the bulk of real GeM volume
-    TenderCategory.MEDICAL: ["medical", "hospital", "surgical", "pharma", "drug", "tab.", "syringe", "catheter", "diagnostic", "x-ray", "ventilator", "ambulance", "laryngoscope", "endoscop", "laparoscop", "airway scope", "nerve monitoring", "elispot", "antibiotic", "biochemistry", "microbiology", "mr imaging", "gamma knife", "aiims", "clinical", "operative", "patient", "icu", "dialysis", "oxygen concentrator", "defibrillator"],
-    TenderCategory.CONSTRUCTION: ["construction", "civil work", "building work", "renovation", "road work", "infrastructure work", "tender for construction"],
+    TenderCategory.MEDICAL: ["medical", "hospital", "surgical", "pharma", "drug", "tab.", "syringe", "catheter", "diagnostic", "x-ray", "ventilator", "ambulance", "laryngoscope", "endoscop", "laparoscop", "airway scope", "nerve monitoring", "elispot", "antibiotic", "biochemistry", "microbiology", "mr imaging", "gamma knife", "aiims", "clinical", "operative", "patient", "icu", "dialysis", "oxygen concentrator", "defibrillator", "analyzer", "reagent", "consumables for", "bronchoscope", "nephelometer", "microplate", "chemiluminescence", "immunoassay", "pcr system", "absorptiometry", "dexa", "coagulation", "gamma globulin", "thromboelast", "cytology", "hematology", "transfusion", "pulmonary medicine", "department of", "rate contract for supply of"],
+    TenderCategory.CONSTRUCTION: ["construction", "civil work", "building work", "renovation", "road work", "infrastructure work", "tender for construction", "patch repair", "extension of building", "repair of road"],
     TenderCategory.EQUIPMENT_MACHINERY: ["earth moving", "excavator", "dumper", "tractor", "crane", "generator", "compressor", "machine", "machinery", "equipment hire"],
     TenderCategory.VEHICLES: ["vehicle", "bus", "car", "ambulance", "two wheeler", "motor cycle", "tipper"],
     TenderCategory.FURNITURE: ["furniture", "chair", "table", "almirah", "cabinet", "desk", "sofa"],
