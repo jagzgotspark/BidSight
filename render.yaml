@@ -1,0 +1,75 @@
+services:
+  - type: web
+    name: bidsight-api
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bidsight-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: bidsight-redis
+          type: redis
+          property: connectionString
+      - key: REDIS_DEDUP_DB
+        value: 1
+      - key: DEBUG
+        value: false
+      - key: ENVIRONMENT
+        value: production
+      - key: GROQ_API_KEY
+        sync: false
+      - key: CLERK_SECRET_KEY
+        sync: false
+      - key: CLERK_PUBLISHABLE_KEY
+        sync: false
+      - key: CLERK_JWT_PUBLIC_KEY
+        sync: false
+
+  - type: worker
+    name: bidsight-celery-worker
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A scraper.tasks.scrape worker --loglevel=info --concurrency=1
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bidsight-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: bidsight-redis
+          type: redis
+          property: connectionString
+      - key: GROQ_API_KEY
+        sync: false
+
+  - type: worker
+    name: bidsight-celery-beat
+    runtime: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: celery -A scraper.tasks.scrape beat --loglevel=info
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: bidsight-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: bidsight-redis
+          type: redis
+          property: connectionString
+
+databases:
+  - name: bidsight-db
+    plan: free
+
+  - name: bidsight-redis
+    plan: free
+    ipAllowList: []
