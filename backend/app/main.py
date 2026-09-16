@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 
@@ -13,7 +14,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+        allow_origins=[
+        "http://localhost:3000",
+        "https://bidsight.vercel.app",
+        os.getenv("FRONTEND_URL", ""),
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
