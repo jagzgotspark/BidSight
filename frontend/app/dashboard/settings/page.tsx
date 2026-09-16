@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import { getProfile, saveProfile } from "../../../lib/api";
@@ -24,27 +24,28 @@ export default function SettingsPage() {
   const { getToken } = useAuth();
 
   // Pre-fill form when profile loads
-  const { isLoading } = useQuery({
+  const { data: profile, isLoading } = useQuery({
     queryKey: ["profile"],
     queryFn: async () => {
       const token = await getToken();
       return getProfile(token);
     },
-    onSuccess: (data) => {
-      if (data) {
-        setForm({
-          company_name: data.company_name ?? "",
-          services: data.services ?? "",
-          tech_stack: data.tech_stack ?? "",
-          certifications: data.certifications ?? "",
-          team_size: String(data.team_size ?? ""),
-          geography: data.geography ?? "",
-          min_budget: data.min_budget ?? "",
-          max_budget: data.max_budget ?? "",
-        });
-      }
-    },
   });
+
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        company_name: profile.company_name ?? "",
+        services: profile.services ?? "",
+        tech_stack: profile.tech_stack ?? "",
+        certifications: profile.certifications ?? "",
+        team_size: String(profile.team_size ?? ""),
+        geography: profile.geography ?? "",
+        min_budget: profile.min_budget ?? "",
+        max_budget: profile.max_budget ?? "",
+      });
+    }
+  }, [profile]);
 
   const mutation = useMutation({
     mutationFn: async (data: CompanyProfileCreate) => {

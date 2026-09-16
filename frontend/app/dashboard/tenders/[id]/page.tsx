@@ -85,7 +85,7 @@ export default function TenderDetailPage() {
         <div className="space-y-2">
           <div className="flex items-start gap-3">
             <h1 className="text-xl font-semibold leading-snug flex-1">{tender.title}</h1>
-            
+            <a
               href={tenderSourceUrl(tender)}
               target="_blank"
               rel="noopener noreferrer"
