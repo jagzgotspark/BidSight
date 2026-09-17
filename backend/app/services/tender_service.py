@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 from app.models.tender import Tender
 
@@ -37,3 +39,14 @@ def bulk_upsert_tenders(db: Session, tenders: list[dict]) -> dict:
             skipped += 1
 
     return {"created": created, "skipped": skipped, "total": len(tenders)}
+
+
+def expire_stale_tenders(db: Session) -> int:
+    """Mark active tenders whose deadline has passed as closed. Returns count updated."""
+    updated = (
+        db.query(Tender)
+        .filter(Tender.status == "active", Tender.deadline < datetime.utcnow())
+        .update({"status": "closed"}, synchronize_session=False)
+    )
+    db.commit()
+    return updated

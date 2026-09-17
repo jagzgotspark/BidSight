@@ -40,6 +40,12 @@ def list_tenders(
         query = query.filter(Tender.category == category)
     if status:
         query = query.filter(Tender.status == status)
+    if status == "active":
+        # Safety net: never show tenders past their deadline as active,
+        # even if the expiry sweep hasn't caught them yet.
+        query = query.filter(
+            or_(Tender.deadline.is_(None), Tender.deadline >= datetime.utcnow())
+        )
     if location:
         query = query.filter(Tender.location.ilike(f"%{location}%"))
     if min_budget:
