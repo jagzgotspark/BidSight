@@ -21,7 +21,38 @@ async def score_tender(tender: Tender, profile: CompanyProfile) -> dict:
     Returns: { score: int, reasoning: str, strengths: list, risks: list }
     """
 
-    prompt = f"""You are a procurement expert. Score how well this government tender matches a company's profile.
+    prompt = f"""You are a procurement expert. Score how well a government tender matches a company's profile.
+
+Score from 0 to 100 where:
+- 90-100: Perfect fit, should definitely bid
+- 70-89: Strong fit, worth serious consideration
+- 50-69: Moderate fit, some gaps but possible
+- 30-49: Weak fit, significant gaps
+- 0-29: Poor fit, not recommended
+
+Use the FULL range. Do not default to the 20-40 band out of caution — a company
+that clearly does this kind of work, in this location, at this budget, should
+score 70+ even if the tender description is thin. Judge on the concrete
+overlaps below, not on how much detail the tender text happens to contain.
+
+Here are calibration examples showing how to score:
+
+EXAMPLE 1 (strong fit → 88):
+TENDER: Title: Development of Municipal Water Billing Software | Authority: Pune Municipal Corporation | Category: IT Services | Location: Maharashtra | Budget: ₹45L | Description: Design and deploy a web-based billing system for water supply.
+COMPANY: Services offered: Web application development, government SaaS | Tech stack: React, Node.js, PostgreSQL | Certifications: ISO 27001 | Team size: 25 | Geography focus: Maharashtra, Gujarat | Budget range: ₹20L - ₹80L
+{{"score": 88, "reasoning": "Direct match on service type, tech stack, and geography, with budget comfortably inside the company's range.", "strengths": ["Core competency is web app development for government clients", "Operates in Maharashtra"], "risks": ["No stated experience with utility billing specifically"]}}
+
+EXAMPLE 2 (moderate fit → 55):
+TENDER: Title: Supply and Installation of CCTV Surveillance System | Authority: Delhi Police | Category: Security Hardware | Location: Delhi | Budget: ₹1.2Cr | Description: Procurement and installation of 500 CCTV cameras with monitoring software.
+COMPANY: Services offered: Software development, IT consulting | Tech stack: Python, AWS | Certifications: None listed | Team size: 12 | Geography focus: North India | Budget range: ₹10L - ₹50L
+{{"score": 55, "reasoning": "Geography matches and the monitoring-software component overlaps with software capability, but the hardware procurement/installation core is outside expertise, and the budget far exceeds the company's stated range.", "strengths": ["Location match", "Some overlap via monitoring software"], "risks": ["No hardware installation capability", "Budget more than 2x the company's max"]}}
+
+EXAMPLE 3 (poor fit → 12):
+TENDER: Title: Construction of Rural Road Network | Authority: PWD Rajasthan | Category: Civil Works | Location: Rajasthan | Budget: ₹8Cr | Description: Construction of 40km of rural roads including drainage.
+COMPANY: Services offered: Mobile app development | Tech stack: Flutter, Firebase | Certifications: None | Team size: 8 | Geography focus: South India | Budget range: ₹5L - ₹30L
+{{"score": 12, "reasoning": "No overlap in service type (civil construction vs. software), no geographic presence in Rajasthan, and budget is orders of magnitude beyond capacity.", "strengths": [], "risks": ["Entirely different industry", "No geographic presence", "Budget mismatch by 25x+"]}}
+
+Now score this tender:
 
 TENDER:
 Title: {tender.title}
@@ -40,14 +71,7 @@ Team size: {profile.team_size}
 Geography focus: {profile.geography}
 Budget range: ₹{profile.min_budget}L - ₹{profile.max_budget}L
 
-Score this match from 0 to 100 where:
-- 90-100: Perfect fit, should definitely bid
-- 70-89: Strong fit, worth serious consideration
-- 50-69: Moderate fit, some gaps but possible
-- 30-49: Weak fit, significant gaps
-- 0-29: Poor fit, not recommended
-
-Respond ONLY with valid JSON, no markdown, no extra text:
+Respond ONLY with valid JSON, no markdown, no extra text, matching the exact format of the examples above:
 {{"score": <integer 0-100>, "reasoning": "<2 sentences>", "strengths": ["<strength 1>", "<strength 2>"], "risks": ["<risk 1>", "<risk 2>"]}}"""
 
     headers = {

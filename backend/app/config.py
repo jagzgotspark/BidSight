@@ -23,9 +23,10 @@ class Settings(BaseSettings):
     # Groq (free AI for match scoring)
     groq_api_key: str = ""
 
-    # Razorpay (Phase 4)
+    # Razorpay
     razorpay_key_id: str = ""
     razorpay_key_secret: str = ""
+    razorpay_webhook_secret: str = ""
 
     class Config:
         env_file = ".env"

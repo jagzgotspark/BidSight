@@ -229,6 +229,7 @@ function Header() {
         <a href="/dashboard/proposals" className="hover:text-foreground">Proposals</a>
         <span className="text-foreground font-medium">Analytics</span>
         <a href="/dashboard/alerts" className="hover:text-foreground">Alerts</a>
+        <a href="/dashboard/billing" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Billing</a>
         <a href="/dashboard/settings" style={{ color: "#a3a3a3", textDecoration: "none", fontSize: "0.875rem" }} className="hover:text-foreground">Settings</a>
         
       </nav>

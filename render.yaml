@@ -29,6 +29,24 @@ services:
         sync: false
       - key: CLERK_JWT_PUBLIC_KEY
         sync: false
+      - key: ALERTS_EMAIL_ENABLED
+        value: 1
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
 
   - type: worker
     name: bidsight-celery-worker
@@ -47,6 +65,18 @@ services:
           type: redis
           property: connectionString
       - key: GROQ_API_KEY
+        sync: false
+      - key: ALERTS_EMAIL_ENABLED
+        value: 1
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
         sync: false
 
   - type: worker
