@@ -4,7 +4,7 @@ from sqlalchemy import func, case
 from datetime import datetime, timedelta
 
 from app.database import get_db
-from app.dependencies.auth import get_current_user
+from app.dependencies.plan import require_professional_plan
 from app.models.tender import Tender
 from app.models.bid import Bid
 
@@ -14,9 +14,9 @@ router = APIRouter(prefix="/analytics", tags=["analytics"])
 @router.get("/overview")
 def get_overview(
     db: Session = Depends(get_db),
-    user_id: str = Depends(get_current_user),
+    user_id: str = Depends(require_professional_plan),
 ):
-    """Full analytics overview for the dashboard."""
+    """Full analytics overview for the dashboard. Professional plan only."""
 
     # Total tenders
     total_tenders = db.query(Tender).count()

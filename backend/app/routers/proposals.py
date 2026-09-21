@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
 from app.dependencies.auth import get_current_user
+from app.dependencies.plan import require_professional_plan
 from app.models.proposal import Proposal
 from app.models.tender import Tender
 from app.models.company_profile import CompanyProfile
@@ -20,11 +21,11 @@ async def generate_proposal_endpoint(
     additional_notes: str = Form(default=""),
     company_profile_pdf: Optional[UploadFile] = File(default=None),
     db: Session = Depends(get_db),
-    user_id: str = Depends(get_current_user),
+    user_id: str = Depends(require_professional_plan),
 ):
     """
     Generate a full proposal for a tender.
-    Accepts optional PDF upload for company profile.
+    Accepts optional PDF upload for company profile. Professional plan only.
     """
     # Get tender
     tender = db.query(Tender).filter(Tender.id == tender_id).first()

@@ -17,6 +17,9 @@ log = structlog.get_logger()
 
 PLAN_INTERVAL_DAYS = 30
 
+# "starter" isn't listed here — it's the free default (see User.plan) and has
+# no checkout flow. "enterprise" is sold off-platform via a contact-sales
+# form, not through Razorpay, so it isn't listed either.
 PLANS = {
     "professional": {
         "id": "professional",

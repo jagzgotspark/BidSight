@@ -230,26 +230,26 @@ export default function Home() {
         <div className="bs-section">
           <div className="bs-section-label">Pricing</div>
           <h2>Simple, transparent plans</h2>
-          <p className="bs-section-sub">Start free for 14 days. No credit card required.</p>
+          <p className="bs-section-sub">Free to start. No credit card required.</p>
           <div className="bs-pricing-grid">
             <div className="bs-plan">
               <div className="bs-plan-name">Starter</div>
-              <div className="bs-plan-price">₹999<span>/mo</span></div>
-              <div className="bs-plan-desc">For solo consultants</div>
+              <div className="bs-plan-price">Free</div>
+              <div className="bs-plan-desc">For getting started</div>
               <ul className="bs-plan-features">
-                <li>Opportunity feed</li><li>AI summaries</li><li>Basic tracking</li><li>Email alerts</li>
+                <li>Opportunity feed</li><li>Up to 10 AI match scores/day</li><li>Basic pipeline tracking</li><li>In-app alerts</li>
               </ul>
-              <button className="bs-plan-btn">Get started</button>
+              <Link href="/sign-up" className="bs-plan-btn" style={{display:"block",textAlign:"center",textDecoration:"none"}}>Get started</Link>
             </div>
             <div className="bs-plan featured">
               <div className="bs-plan-badge">Most popular</div>
               <div className="bs-plan-name">Professional</div>
-              <div className="bs-plan-price">₹2,999<span>/mo</span></div>
-              <div className="bs-plan-desc">For growing agencies</div>
+              <div className="bs-plan-price">₹999<span>/mo</span></div>
+              <div className="bs-plan-desc">For solo consultants &amp; agencies</div>
               <ul className="bs-plan-features">
-                <li>Smart match scoring</li><li>Proposal generation</li><li>Analytics dashboard</li><li>Slack & Teams alerts</li><li>Competitor intelligence</li>
+                <li>Unlimited AI match scoring</li><li>Proposal drafting assistant</li><li>Full analytics dashboard</li><li>Email + in-app deadline alerts</li>
               </ul>
-              <button className="bs-plan-btn">Start free trial</button>
+              <Link href="/sign-up" className="bs-plan-btn" style={{display:"block",textAlign:"center",textDecoration:"none"}}>Get started</Link>
             </div>
             <div className="bs-plan">
               <div className="bs-plan-name">Enterprise</div>
@@ -258,7 +258,7 @@ export default function Home() {
               <ul className="bs-plan-features">
                 <li>Team collaboration</li><li>API access</li><li>Custom integrations</li><li>Dedicated support</li>
               </ul>
-              <button className="bs-plan-btn">Contact sales</button>
+              <a href="mailto:jagritisingh1285@gmail.com?subject=BidSight%20Enterprise" className="bs-plan-btn" style={{display:"block",textAlign:"center",textDecoration:"none"}}>Contact sales</a>
             </div>
           </div>
         </div>

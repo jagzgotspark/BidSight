@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies.auth import get_current_user
+from app.dependencies.plan import STARTER_DAILY_SCORE_LIMIT
 from app.models.company_profile import CompanyProfile
 from app.models.tender import Tender
 from app.schemas.profile import (
@@ -12,6 +13,7 @@ from app.schemas.profile import (
     CompanyProfileResponse,
     MatchScoreResponse,
 )
+from app.services.billing_service import get_status
 from app.services.match_service import score_all_tenders, score_tender
 
 router = APIRouter(prefix="/match", tags=["match"])
@@ -84,6 +86,10 @@ def get_match_scores(
 
     if not tenders:
         return []
+
+    if not get_status(db, user_id)["is_active"]:
+        limit = min(limit, STARTER_DAILY_SCORE_LIMIT)
+        tenders = tenders[:limit]
 
     results = asyncio.run(score_all_tenders(tenders, profile, limit=limit))
     return results
