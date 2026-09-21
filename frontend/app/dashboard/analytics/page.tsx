@@ -42,7 +42,7 @@ const COLORS = ["#1D9E75", "#3B82F6", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899"
 
 export default function AnalyticsPage() {
   const { getToken } = useAuth();
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ["analytics"],
     queryFn: async () => {
       const token = await getToken();
@@ -65,6 +65,27 @@ export default function AnalyticsPage() {
   }
 
   if (isError) {
+    const status = axios.isAxiosError(error) ? error.response?.status : undefined;
+
+    if (status === 402) {
+      return (
+        <div className="min-h-screen bg-background">
+          <Header />
+          <div className="flex flex-col items-center justify-center h-64 gap-3 text-sm">
+            <p className="text-muted-foreground">
+              The analytics dashboard is part of the Professional plan.
+            </p>
+            <a
+              href="/dashboard/billing"
+              className="px-4 py-2 rounded-md bg-primary text-primary-foreground font-medium"
+            >
+              Upgrade to Professional
+            </a>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="min-h-screen bg-background">
         <Header />
