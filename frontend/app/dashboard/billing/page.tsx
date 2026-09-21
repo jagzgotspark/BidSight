@@ -39,6 +39,7 @@ export default function BillingPage() {
   const qc = useQueryClient();
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [agreed, setAgreed] = useState(false);
 
   const { data: plans } = useQuery<Plan[]>({
     queryKey: ["billing", "plans"],
@@ -58,6 +59,10 @@ export default function BillingPage() {
   });
 
   async function handleUpgrade(planId: string) {
+    if (!agreed) {
+      setError("Please agree to the Terms of Service and Refund Policy before upgrading.");
+      return;
+    }
     setError(null);
     setProcessing(true);
     try {
@@ -168,6 +173,23 @@ export default function BillingPage() {
           </div>
         )}
 
+        {!isPro && (
+          <label className="flex items-start gap-2 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              I agree to the{" "}
+              <a href="/legal/terms" target="_blank" className="underline hover:text-foreground">Terms of Service</a>{" "}
+              and{" "}
+              <a href="/legal/refund" target="_blank" className="underline hover:text-foreground">Refund Policy</a>.
+            </span>
+          </label>
+        )}
+
         <div className="grid gap-4">
           {plans?.map((plan) => (
             <Card key={plan.id} className="p-6">
@@ -181,7 +203,7 @@ export default function BillingPage() {
                 ) : (
                   <button
                     onClick={() => handleUpgrade(plan.id)}
-                    disabled={processing}
+                    disabled={processing || !agreed}
                     className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50"
                   >
                     {processing ? "Processing…" : "Upgrade"}

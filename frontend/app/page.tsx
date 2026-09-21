@@ -267,7 +267,10 @@ export default function Home() {
         <div className="bs-footer">
           <span>© 2026 BidSight · See opportunities before everyone else.</span>
           <span style={{display:"flex",gap:"1rem"}}>
-            <span>Privacy</span><span>Terms</span><span>Contact</span>
+            <Link href="/legal/privacy">Privacy</Link>
+            <Link href="/legal/terms">Terms</Link>
+            <Link href="/legal/refund">Refunds</Link>
+            <Link href="/legal/cookies">Cookies</Link>
           </span>
         </div>
       </div>
