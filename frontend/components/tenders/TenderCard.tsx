@@ -2,7 +2,7 @@
 import { Tender } from "@/types/tender";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { formatBudget, daysToDeadline, categoryLabel, sourceLabel, tenderSourceUrl } from "@/lib/tenderUtils";
+import { formatBudget, hasBudget, daysToDeadline, categoryLabel, sourceLabel, tenderSourceUrl } from "@/lib/tenderUtils";
 import { ExternalLink, Clock, Building2, MapPin, Loader2 } from "lucide-react";
 import { useAuth } from "@clerk/nextjs";
 
@@ -105,7 +105,9 @@ export default function TenderCard({ tender, isScoring = false }: { tender: Tend
 
         {/* Right column */}
         <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 flex-shrink-0">
-          <span className="text-sm font-semibold">{formatBudget(tender)}</span>
+          {hasBudget(tender) && (
+            <span className="text-sm font-semibold">{formatBudget(tender)}</span>
+          )}
           <div className="flex gap-1.5 flex-wrap sm:justify-end">
             <Badge variant="outline" className="text-xs">{sourceLabel(tender.source)}</Badge>
             <Badge variant="secondary" className="text-xs">{categoryLabel(tender.category)}</Badge>

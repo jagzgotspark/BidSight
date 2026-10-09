@@ -4,37 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
 import { Card } from "@/components/ui/card";
+import { categoryLabel } from "@/lib/tenderUtils";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
 } from "recharts";
-
-const CATEGORY_LABELS: Record<string, string> = {
-  it_software: "IT / Software",
-  cloud: "Cloud",
-  ai_ml: "AI / ML",
-  cybersecurity: "Cybersecurity",
-  consulting: "Consulting",
-  infrastructure: "Infrastructure",
-  hardware: "Hardware",
-  medical: "Medical",
-  construction: "Construction",
-  equipment_machinery: "Equipment & Machinery",
-  vehicles: "Vehicles",
-  furniture: "Furniture",
-  electrical: "Electrical",
-  textiles_apparel: "Textiles & Apparel",
-  food_catering: "Food & Catering",
-  office_supplies: "Office Supplies",
-  security_services: "Security Services",
-  maintenance_amc: "Maintenance / AMC",
-  industrial_parts: "Industrial Parts",
-  defense_marine: "Defense & Marine",
-  library_publishing: "Library & Publishing",
-  other: "Other",
-};
 
 const STAGE_ORDER = ["new", "interested", "evaluating", "drafting", "submitted", "won", "lost"];
 
@@ -97,7 +73,7 @@ export default function AnalyticsPage() {
   }
 
   const categoryData = data?.by_category?.map((c: any) => ({
-    name: CATEGORY_LABELS[c.category] || c.category,
+    name: categoryLabel(c.category),
     count: c.count,
   })) || [];
 

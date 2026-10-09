@@ -6,6 +6,7 @@ No HTML parsing needed — we get clean JSON directly.
 """
 
 import asyncio
+import io
 import json
 import os
 import sys
@@ -17,9 +18,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
+from pypdf import PdfReader
 
 from scraper.models.tender import Tender, TenderCategory, TenderSource, TenderStatus
-from scraper.scrapers.gem import _classify, _parse_inr, _parse_date
+from scraper.scrapers.gem import _classify, _parse_inr, _parse_date, _parse_disclosed_value
+
+BID_DOC_URL = "https://bidplus.gem.gov.in/showbidDocument/{bid_id}"
 
 
 async def scrape_gem_stealth(max_pages: int = 3) -> list[Tender]:
@@ -87,9 +91,33 @@ async def scrape_gem_stealth(max_pages: int = 3) -> list[Tender]:
                 print(f"  Page {page_num}: no response captured")
                 break
 
+        # Budget isn't in the listing JSON; it's "Estimated Bid Value" in the
+        # bid document PDF, and only when the buyer chose to disclose it.
+        print(f"Fetching bid documents for {len(all_tenders)} tenders...")
+        for t in all_tenders:
+            if not t.document_urls:
+                continue
+            try:
+                t.budget_raw, t.budget_max = await fetch_bid_value(context, t.document_urls[0])
+            except Exception as exc:
+                print(f"  Bid doc error {t.tender_id}: {exc}")
+            await asyncio.sleep(1)
+
         await browser.close()
 
     return all_tenders
+
+
+async def fetch_bid_value(context, url: str) -> tuple[str, Optional[float]]:
+    """Download a GeM bid document and read its "Estimated Bid Value"."""
+    response = await context.request.get(url, timeout=60000)
+    if not response.ok:
+        raise RuntimeError(f"HTTP {response.status}")
+    reader = PdfReader(io.BytesIO(await response.body()))
+    # The bid details table is on the first couple of pages
+    text = "\n".join((p.extract_text() or "") for p in reader.pages[:3])
+    match = re.search(r"Estimated Bid Value\s*([\d,]+(?:\.\d+)?)", text)
+    return _parse_disclosed_value(match.group(1) if match else "")
 
 
 def _parse_api_response(data: dict) -> list[Tender]:
@@ -145,6 +173,7 @@ def _normalise_doc(doc: dict) -> Tender:
     source_url = (
         f"https://bidplus.gem.gov.in/viewbid/{bid_number}" if bid_number else ""
     )
+    document_urls = [BID_DOC_URL.format(bid_id=bid_id)] if bid_id else []
 
     return Tender(
         tender_id=bid_number or bid_id or title[:40],
@@ -160,6 +189,7 @@ def _normalise_doc(doc: dict) -> Tender:
         published_at=parse_gem_date(published_raw),
         status=TenderStatus.ACTIVE,
         source_url=source_url,
+        document_urls=document_urls,
     )
 
 
@@ -191,6 +221,16 @@ async def main():
     dedup = Deduplicator()
     new_tenders = [t for t in tenders if dedup.is_new(t.fingerprint)]
     print(f"\n{len(new_tenders)} new tenders to save")
+
+    from app.services.tender_service import update_tender_budgets
+
+    db = SessionLocal()
+    try:
+        # Tenders saved before budgets were fetched get theirs filled in here
+        budgets = {t.fingerprint: (t.budget_raw, t.budget_max) for t in tenders if t.budget_raw}
+        print(f"Budgets: {update_tender_budgets(db, budgets)} existing tenders updated")
+    finally:
+        db.close()
 
     if not new_tenders:
         print("All already in DB.")

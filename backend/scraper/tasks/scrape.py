@@ -80,11 +80,12 @@ def scrape_gem_portal(self) -> dict:
 
 @app.task(bind=True, name="scraper.tasks.scrape_cppp_portal",
           max_retries=2, default_retry_delay=600,
-          time_limit=2400, soft_time_limit=2100)
+          time_limit=3300, soft_time_limit=3000)
 def scrape_cppp_portal(self, max_orgs: int = 246) -> dict:
     """Scrape CPPP across organisations via the stealth scraper."""
     try:
-        return _run_scraper(CPPP_SCRIPT, [str(max_orgs)], timeout=2300)
+        # Extra headroom for the per-tender detail pages fetched for budgets
+        return _run_scraper(CPPP_SCRIPT, [str(max_orgs)], timeout=3200)
     except Exception as exc:
         log.error("cppp task error: %s", exc)
         raise self.retry(exc=exc)
@@ -120,10 +121,10 @@ def check_match_alerts() -> dict:
     """Score recent tenders and alert on new high-fit matches."""
     import asyncio
     from app.database import SessionLocal
-    from app.services.alert_service import create_match_alerts
+    from app.services.alert_service import create_match_alerts_for_all_users
     db = SessionLocal()
     try:
-        result = asyncio.run(create_match_alerts(db))
+        result = asyncio.run(create_match_alerts_for_all_users(db))
         log.info("match_alerts: %s", result)
         return result
     finally:

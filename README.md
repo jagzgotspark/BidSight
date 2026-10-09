@@ -220,7 +220,7 @@ python3.11 -m venv .venv-scraper
 source .venv-scraper/bin/activate
 pip install playwright playwright-stealth httpx beautifulsoup4 lxml pydantic \
             sqlalchemy psycopg2-binary python-dotenv structlog tenacity \
-            python-dateutil pydantic-settings
+            python-dateutil pydantic-settings pypdf
 playwright install chromium
 
 # GeM (real-time XHR interception)
@@ -286,7 +286,7 @@ Interactive docs at `http://localhost:8000/docs`.
 ## Known limitations
 
 - **Match score calibration** — the model clusters scores around 30–40% regardless of fit. Scores are useful for relative ranking but absolute numbers are not reliable. Fix: few-shot prompting with labelled examples.
-- **Budget data** — most tenders show N/A. GeM listings don't expose budget in the XHR response; extraction would require drilling into each tender's detail page.
+- **Budget data** — budgets come from each tender's detail page (CPPP "Tender Value in ₹") or bid document PDF (GeM "Estimated Bid Value"). Buyers can choose not to disclose it, so some tenders show "Value not disclosed". CPPP fetches at most `CPPP_MAX_DETAILS` (default 200) detail pages per run, so a backlog fills in over several runs.
 - **No authentication** — everything runs as `demo_user`. Clerk integration is the prerequisite for multi-tenancy and billing.
 - **Two venvs** — Python 3.13/3.11 split adds operational overhead. Documented in setup; worth it to keep the backend on a current runtime.
 

@@ -1,32 +1,16 @@
 from __future__ import annotations
 
 import json
-import os
-import httpx
-from dotenv import load_dotenv
 
-load_dotenv()
-
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.1-8b-instant"
+from app.services.groq_client import chat_completion
 
 
 async def _call_groq(prompt: str, max_tokens: int = 1000) -> str:
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json",
-    }
-    body = {
-        "model": GROQ_MODEL,
+    data = await chat_completion({
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": max_tokens,
         "temperature": 0.4,
-    }
-    async with httpx.AsyncClient(timeout=60) as client:
-        response = await client.post(GROQ_URL, headers=headers, json=body)
-        response.raise_for_status()
-        data = response.json()
+    })
     return data["choices"][0]["message"]["content"].strip()
 
 
@@ -66,8 +50,10 @@ Additional Notes: {additional_notes}
 {f'Company Profile Document: {company_profile_text[:2000]}' if company_profile_text else ''}
 """
 
-    import asyncio
-
+    # Sections run one after another and each resends the full context, so a
+    # proposal is ~10k tokens: more than the free tier's 8k/minute. _call_groq
+    # waits out 429s; if it still fails the error propagates so the caller can
+    # report it instead of saving a proposal full of error text.
     async def gen_section(section_name: str, instruction: str, tokens: int = 600) -> str:
         prompt = f"""You are a professional bid writer helping an Indian IT company respond to a government tender.
 
@@ -78,12 +64,7 @@ Write the {section_name} section for this proposal.
 
 Be specific, professional, and tailored to this exact tender.
 Write in formal business English. 3-5 paragraphs. No headers, just the content."""
-        try:
-            result = await _call_groq(prompt, max_tokens=tokens)
-            await asyncio.sleep(1)  # avoid rate limit
-            return result
-        except Exception as e:
-            return f"[Generation failed: {e}]"
+        return await _call_groq(prompt, max_tokens=tokens)
 
     # Generate all sections
     executive_summary = await gen_section(

@@ -1,7 +1,7 @@
 """
-One-time backfill: re-classify all existing tenders using the expanded
-category taxonomy. Safe to re-run — it's idempotent (just re-derives category
-from title/description each time).
+Backfill: re-classify all existing tenders with scraper/classify.py.
+Re-run it whenever the keyword table changes. Safe to re-run — it's
+idempotent (just re-derives category from title/description each time).
 
 Run from backend/ with the backend venv active:
     python backfill_categories.py
@@ -19,38 +19,12 @@ if not DATABASE_URL:
     print("ERROR: DATABASE_URL not found in .env")
     sys.exit(1)
 
-# ── Same keyword table as scraper/scrapers/gem.py — keep in sync ──
-_CATEGORY_KEYWORDS = {
-    "it_software": ["software", "erp", "mobile app", "web", "portal", "application", "crm"],
-    "cloud": ["cloud", "aws", "azure", "saas", "hosting", "data center service"],
-    "ai_ml": ["artificial intelligence", "machine learning", " ai ", "ml model", "data science", "analytics platform"],
-    "cybersecurity": ["cyber security", "vapt", "penetration test", "firewall", "soc service"],
-    "consulting": ["consulting", "advisory", "consultancy", "assessment study"],
-    "infrastructure": ["network", "cabling", "datacenter", "data centre", "it storage"],
-    "hardware": ["laptop", "desktop", "computer", "printer", "server hardware", "ups", "projector"],
-    "medical": ["medical", "hospital", "surgical", "pharma", "drug", "tab.", "syringe", "catheter", "diagnostic", "x-ray", "ventilator", "ambulance", "laryngoscope", "endoscop", "laparoscop", "airway scope", "nerve monitoring", "elispot", "antibiotic", "biochemistry", "microbiology", "mr imaging", "gamma knife", "aiims", "clinical", "operative", "patient", "icu", "dialysis", "oxygen concentrator", "defibrillator", "analyzer", "reagent", "consumables for", "bronchoscope", "nephelometer", "microplate", "chemiluminescence", "immunoassay", "pcr system", "absorptiometry", "dexa", "coagulation", "gamma globulin", "thromboelast", "cytology", "hematology", "transfusion", "pulmonary medicine", "department of", "rate contract for supply of"],
-    "construction": ["construction", "civil work", "building work", "renovation", "road work", "infrastructure work", "tender for construction", "patch repair", "extension of building", "repair of road"],
-    "equipment_machinery": ["earth moving", "excavator", "dumper", "tractor", "crane", "generator", "compressor", "machine", "machinery", "equipment hire"],
-    "vehicles": ["vehicle", "bus", "car", "ambulance", "two wheeler", "motor cycle", "tipper"],
-    "furniture": ["furniture", "chair", "table", "almirah", "cabinet", "desk", "sofa"],
-    "electrical": ["electrical", "wiring", "transformer", "switchgear", "cable", "led light", "solar panel"],
-    "textiles_apparel": ["uniform", "textile", "fabric", "garment", "apparel", "shoes", "footwear"],
-    "food_catering": ["catering", "food supply", "ration", "canteen", "meal"],
-    "office_supplies": ["stationery", "paper", "printing service", "office supply"],
-    "security_services": ["security guard", "security service", "manpower security", "watchman"],
-    "maintenance_amc": ["amc", "annual maintenance", "cmc", "housekeeping", "facility management", "repair and overhauling", "repair, maintenance", "overhaul"],
-    "industrial_parts": ["bearing", "valve", "gasket", "shelving rack", "ballast block", "union 1/2", "spare part", "industrial component", "vacuum cleaner", "cylinder", "skid steer"],
-    "defense_marine": ["submarine", "naval", "marine unit", "battery type", "tps", "ugssn", "kpcl", "defence", "armed forces"],
-    "library_publishing": ["database subscription", "library", "journal", "publication", "signage"],
-}
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from scraper.classify import classify as _classify  # noqa: E402
 
 
 def classify(title: str, description: str = "") -> str:
-    text = (title + " " + (description or "")).lower()
-    for category, keywords in _CATEGORY_KEYWORDS.items():
-        if any(kw in text for kw in keywords):
-            return category
-    return "other"
+    return _classify(title, description or "").value
 
 
 def main():

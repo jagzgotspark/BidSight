@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     # Groq (free AI for match scoring)
     groq_api_key: str = ""
+    groq_model: str = "qwen/qwen3.8-27b"
 
     # Razorpay
     razorpay_key_id: str = ""

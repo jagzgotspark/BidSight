@@ -25,6 +25,8 @@ def list_tenders(
     search: Optional[str] = None,
     db: Session = Depends(get_db),
     scored_only: bool = False,
+    min_score: Optional[float] = Query(None, ge=0, le=100),
+    sort: str = Query("newest", pattern="^(newest|score)$"),
 ):
     """
     List tenders with filters.
@@ -54,6 +56,8 @@ def list_tenders(
         query = query.filter(Tender.budget_max <= max_budget)
     if scored_only:
         query = query.filter(Tender.match_score.isnot(None))
+    if min_score is not None:
+        query = query.filter(Tender.match_score >= min_score)
     if closing_in_days:
         cutoff = datetime.utcnow() + timedelta(days=closing_in_days)
         query = query.filter(
@@ -71,10 +75,14 @@ def list_tenders(
     # Total count before pagination
     total = query.count()
 
-    # Pagination — newest first
+    # Pagination — newest first, or best match first
+    if sort == "score":
+        order = (Tender.match_score.desc().nullslast(), Tender.deadline.asc().nullslast())
+    else:
+        order = (Tender.created_at.desc(),)
     offset = (page - 1) * per_page
     items = (
-        query.order_by(Tender.created_at.desc())
+        query.order_by(*order)
         .offset(offset)
         .limit(per_page)
         .all()

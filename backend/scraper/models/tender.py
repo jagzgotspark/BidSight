@@ -40,6 +40,13 @@ class TenderCategory(str, Enum):
     INDUSTRIAL_PARTS = "industrial_parts"
     DEFENSE_MARINE = "defense_marine"
     LIBRARY_PUBLISHING = "library_publishing"
+    LAB_SCIENTIFIC = "lab_scientific"
+    ROADS_HIGHWAYS = "roads_highways"
+    WATER_SANITATION = "water_sanitation"
+    HORTICULTURE = "horticulture"
+    MANPOWER = "manpower"
+    CHEMICALS_GASES = "chemicals_gases"
+    SPORTS = "sports"
     OTHER = "other"
 
 

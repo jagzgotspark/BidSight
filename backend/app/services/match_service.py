@@ -2,17 +2,9 @@ from __future__ import annotations
 
 import json
 import asyncio
-import os
-import httpx
-from dotenv import load_dotenv
 from app.models.tender import Tender
 from app.models.company_profile import CompanyProfile
-
-load_dotenv()
-
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.1-8b-instant"
+from app.services.groq_client import chat_completion
 
 
 async def score_tender(tender: Tender, profile: CompanyProfile) -> dict:
@@ -74,31 +66,13 @@ Budget range: ₹{profile.min_budget}L - ₹{profile.max_budget}L
 Respond ONLY with valid JSON, no markdown, no extra text, matching the exact format of the examples above:
 {{"score": <integer 0-100>, "reasoning": "<2 sentences>", "strengths": ["<strength 1>", "<strength 2>"], "risks": ["<risk 1>", "<risk 2>"]}}"""
 
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json",
-    }
-
     body = {
-        "model": GROQ_MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "max_tokens": 400,
         "temperature": 0.2,
     }
 
-    async with httpx.AsyncClient(timeout=30) as client:
-        for attempt in range(4):
-            response = await client.post(GROQ_URL, headers=headers, json=body)
-            if response.status_code == 429:
-                # Respect Retry-After if present, else exponential backoff
-                wait = float(response.headers.get("retry-after", 2 ** attempt))
-                await asyncio.sleep(min(wait, 15))
-                continue
-            response.raise_for_status()
-            data = response.json()
-            break
-        else:
-            raise RuntimeError("Groq rate limit: retries exhausted")
+    data = await chat_completion(body, timeout=30, max_wait=45)
 
     text = data["choices"][0]["message"]["content"].strip()
 

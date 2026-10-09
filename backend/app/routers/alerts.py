@@ -49,8 +49,8 @@ def scan_now(db: Session = Depends(get_db)):
     return scan_and_create_alerts(db)
 
 @router.post("/scan-matches")
-def scan_matches_now(threshold: int = 70, db: Session = Depends(get_db)):
-    """Manually run the new-match scan (same logic the Celery task runs)."""
+def scan_matches_now(db: Session = Depends(get_db), user_id: str = Depends(get_current_user)):
+    """Manually run the new-match scan for the current user (same logic the Celery task runs)."""
     import asyncio
     from app.services.alert_service import create_match_alerts
-    return asyncio.run(create_match_alerts(db, threshold=threshold))
+    return asyncio.run(create_match_alerts(db, user_id=user_id))

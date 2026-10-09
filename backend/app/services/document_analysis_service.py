@@ -1,16 +1,9 @@
 from __future__ import annotations
 
 import json
-import os
 
-import httpx
-from dotenv import load_dotenv
+from app.services.groq_client import chat_completion
 
-load_dotenv()
-
-GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
-MODEL = "llama-3.1-8b-instant"
 MAX_CHARS = 15000
 
 SYSTEM = (
@@ -43,12 +36,7 @@ Document text:
 {text[:MAX_CHARS]}
 """
 
-    headers = {
-        "Authorization": f"Bearer {GROQ_API_KEY}",
-        "Content-Type": "application/json",
-    }
     payload = {
-        "model": MODEL,
         "messages": [
             {"role": "system", "content": SYSTEM},
             {"role": "user", "content": prompt},
@@ -58,10 +46,7 @@ Document text:
         "response_format": {"type": "json_object"},
     }
 
-    async with httpx.AsyncClient(timeout=60) as client:
-        resp = await client.post(GROQ_URL, headers=headers, json=payload)
-        resp.raise_for_status()
-        data = resp.json()
+    data = await chat_completion(payload)
 
     content = data["choices"][0]["message"]["content"].strip()
     # Defensive strip in case the model wraps in code fences

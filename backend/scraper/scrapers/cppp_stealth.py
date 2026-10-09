@@ -8,7 +8,10 @@ Strategy (CAPTCHA-free):
      the CAPTCHA, giving ~243 organisations each with a $DirectLink.
   2. Follow each org's drill-down link (also CAPTCHA-free) and parse its
      6-column tender table.
-  3. Dedup via Redis fingerprints, save to PostgreSQL.
+  3. For tenders with no budget yet, open the tender's detail page (also
+     CAPTCHA-free) and read "Tender Value in ₹". Capped per run by
+     CPPP_MAX_DETAILS so the backlog drains over a few runs.
+  4. Dedup via Redis fingerprints, save to PostgreSQL.
 
 The sp= tokens in org links are session-bound, so we harvest and follow them
 within the SAME browser run.
@@ -32,16 +35,21 @@ from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
 
 from scraper.models.tender import Tender, TenderCategory, TenderSource, TenderStatus
-from scraper.scrapers.gem import _classify  # shared category classifier
+from scraper.scrapers.gem import _classify, _parse_disclosed_value
 from scraper.dedup import Deduplicator
 from app.database import SessionLocal
-from app.services.tender_service import bulk_upsert_tenders
+from app.services.tender_service import (
+    bulk_upsert_tenders,
+    tender_ids_missing_budget,
+    update_tender_budgets,
+)
 
 ORG_LIST_URL = (
     "https://eprocure.gov.in/eprocure/app"
     "?page=FrontEndTendersByOrganisation&service=page"
 )
 BASE = "https://eprocure.gov.in"
+MAX_DETAILS = int(os.getenv("CPPP_MAX_DETAILS", "200"))
 
 
 def _parse_cppp_date(raw: str):
@@ -92,8 +100,12 @@ async def harvest_org_links(page) -> list[dict]:
     )
 
 
-async def scrape_org(page, org: dict) -> list[Tender]:
-    """Follow one org's drill-down link and parse its tender table."""
+async def scrape_org(page, org: dict) -> list[tuple[Tender, str]]:
+    """
+    Follow one org's drill-down link and parse its tender table.
+    Returns (tender, detail_href) pairs; detail links are session-bound, so
+    they must be visited in the same browser run.
+    """
     url = org["href"]
     if url.startswith("/"):
         url = BASE + url
@@ -109,15 +121,20 @@ async def scrape_org(page, org: dict) -> list[Tender]:
           for (const tr of trs) {
             const tds = tr.querySelectorAll('td');
             if (tds.length < 6) continue;
-            out.push([...tds].map(td => td.innerText.trim()));
+            const link = tds[4].querySelector('a');
+            out.push({
+              cells: [...tds].map(td => td.innerText.trim()),
+              href: link ? link.getAttribute('href') : '',
+            });
           }
           return out;
         }
         """
     )
 
-    tenders: list[Tender] = []
-    for cells in rows:
+    tenders: list[tuple[Tender, str]] = []
+    for row in rows:
+        cells = row["cells"]
         # Skip header / non-data rows (S.No must be a number)
         if not cells[0].strip().isdigit():
             continue
@@ -131,7 +148,7 @@ async def scrape_org(page, org: dict) -> list[Tender]:
             continue
 
         try:
-            tenders.append(
+            tenders.append((
                 Tender(
                     tender_id=tender_id,
                     source=TenderSource.CPPP,
@@ -146,12 +163,30 @@ async def scrape_org(page, org: dict) -> list[Tender]:
                     status=TenderStatus.ACTIVE,
                     source_url="https://eprocure.gov.in/eprocure/app?page=FrontEndTendersByOrganisation&service=page",
                     eligibility_raw="",
-                )
-            )
+                ),
+                row["href"] or "",
+            ))
         except Exception as exc:
             print(f"    ! row parse error: {exc}")
 
     return tenders
+
+
+async def fetch_tender_value(page, href: str) -> tuple[str, float | None]:
+    """Open a tender's detail page and read "Tender Value in ₹"."""
+    url = BASE + href if href.startswith("/") else href
+    await page.goto(url, wait_until="domcontentloaded", timeout=60000)
+    await asyncio.sleep(1.5)
+    raw = await page.evaluate(
+        """
+        () => {
+          const tds = [...document.querySelectorAll('td')];
+          const i = tds.findIndex(td => td.innerText.trim() === 'Tender Value in ₹');
+          return i >= 0 && tds[i + 1] ? tds[i + 1].innerText.trim() : '';
+        }
+        """
+    )
+    return _parse_disclosed_value(raw)
 
 
 def _to_dict(t: Tender) -> dict:
@@ -192,15 +227,37 @@ async def main(max_orgs: int = 250):
         print(f"Found {len(orgs)} organisations. Scraping up to {max_orgs}.\n")
 
         all_tenders: list[Tender] = []
-        for i, org in enumerate(orgs[:max_orgs], start=1):
-            print(f"[{i}/{min(len(orgs), max_orgs)}] {org['name'][:50]}")
-            try:
-                tenders = await scrape_org(page, org)
-                print(f"    {len(tenders)} tenders")
-                all_tenders.extend(tenders)
-            except Exception as exc:
-                print(f"    ! org failed: {exc}")
-            await asyncio.sleep(2)  # be polite to the portal
+        budgets: dict[str, tuple[str, float | None]] = {}
+        details_left = MAX_DETAILS
+        db = SessionLocal()
+        try:
+            for i, org in enumerate(orgs[:max_orgs], start=1):
+                print(f"[{i}/{min(len(orgs), max_orgs)}] {org['name'][:50]}")
+                try:
+                    rows = await scrape_org(page, org)
+                except Exception as exc:
+                    print(f"    ! org failed: {exc}")
+                    await asyncio.sleep(2)
+                    continue
+
+                need = tender_ids_missing_budget(db, [t.fingerprint for t, _ in rows])
+                fetched = 0
+                for t, href in rows:
+                    if details_left <= 0 or not href or t.fingerprint not in need:
+                        continue
+                    try:
+                        t.budget_raw, t.budget_max = await fetch_tender_value(page, href)
+                        budgets[t.fingerprint] = (t.budget_raw, t.budget_max)
+                        details_left -= 1
+                        fetched += 1
+                    except Exception as exc:
+                        print(f"    ! detail failed: {exc}")
+
+                print(f"    {len(rows)} tenders, {fetched} budgets fetched")
+                all_tenders.extend(t for t, _ in rows)
+                await asyncio.sleep(2)  # be polite to the portal
+        finally:
+            db.close()
 
         await browser.close()
 
@@ -213,17 +270,20 @@ async def main(max_orgs: int = 250):
     new_tenders = [t for t in all_tenders if dedup.is_new(t.fingerprint)]
     print(f"\n{len(all_tenders)} scraped, {len(new_tenders)} new after dedup")
 
-    if not new_tenders:
-        print("Nothing new to save.")
-        return
-
-    # Save
     db = SessionLocal()
     try:
-        result = bulk_upsert_tenders(db, [_to_dict(t) for t in new_tenders])
-        print(f"Saved: {result['created']} new, {result['skipped']} skipped")
-        for t in new_tenders:
-            dedup.mark_seen(t.fingerprint)
+        # Backfill budgets on tenders saved before they had one; new tenders
+        # carry theirs into the insert below
+        updated = update_tender_budgets(db, budgets)
+        print(f"Budgets: {len(budgets)} fetched, {updated} existing tenders updated")
+
+        if new_tenders:
+            result = bulk_upsert_tenders(db, [_to_dict(t) for t in new_tenders])
+            print(f"Saved: {result['created']} new, {result['skipped']} skipped")
+            for t in new_tenders:
+                dedup.mark_seen(t.fingerprint)
+        else:
+            print("Nothing new to save.")
     finally:
         db.close()
 

@@ -36,7 +36,10 @@ def _maybe_send_email(db: Session, alert: Alert) -> bool:
 
     try:
         msg = EmailMessage()
-        msg["Subject"] = f"BidSight: tender closing in {alert.days_left} days"
+        if alert.kind == "match":
+            msg["Subject"] = f"BidSight: new {alert.score}% tender match"
+        else:
+            msg["Subject"] = f"BidSight: tender closing in {alert.days_left} days"
         msg["From"] = os.getenv("SMTP_FROM", os.getenv("SMTP_USER", "alerts@bidsight.app"))
         msg["To"] = user.email
         msg.set_content(
@@ -108,7 +111,7 @@ def scan_and_create_alerts(db: Session) -> dict:
     db.commit()
     return {"bids_checked": len(bids), "alerts_created": created}
 
-MATCH_THRESHOLD = 70
+MATCH_THRESHOLD = 80
 
 
 async def create_match_alerts(
@@ -146,14 +149,14 @@ async def create_match_alerts(
             await asyncio.sleep(0.5)
     db.commit()
 
-    # Create alerts for high matches (deduped via bid_id="match:<id>")
+    # Create alerts for high matches (deduped per user via bid_id="match:<user>:<id>")
     now = datetime.utcnow()
     created = 0
     for t in tenders:
         if t.match_score is None or t.match_score < threshold:
             continue
 
-        bid_key = f"match:{t.id}"
+        bid_key = f"match:{user_id}:{t.id}"
         exists = (
             db.query(Alert)
             .filter(Alert.bid_id == bid_key, Alert.threshold == threshold)
@@ -177,8 +180,8 @@ async def create_match_alerts(
             days_left=days_left,
             threshold=threshold,
             kind="match",
-            score=t.match_score,
-            message=f'New {t.match_score}% match: "{t.title[:80]}"',
+            score=round(t.match_score),
+            message=f'New {round(t.match_score)}% match: "{t.title[:80]}"',
             channel="in_app",
         )
         db.add(alert)
@@ -187,3 +190,16 @@ async def create_match_alerts(
 
     db.commit()
     return {"recent_tenders": len(tenders), "scored": scored, "match_alerts_created": created}
+
+async def create_match_alerts_for_all_users(
+    db: Session,
+    threshold: int = MATCH_THRESHOLD,
+) -> dict:
+    """Run the new-match scan for every user who has set up a company profile."""
+    from app.models.company_profile import CompanyProfile
+
+    user_ids = [row.user_id for row in db.query(CompanyProfile.user_id).all()]
+    results = {}
+    for user_id in user_ids:
+        results[user_id] = await create_match_alerts(db, user_id=user_id, threshold=threshold)
+    return results

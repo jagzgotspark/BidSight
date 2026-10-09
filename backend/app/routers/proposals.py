@@ -10,6 +10,7 @@ from app.models.proposal import Proposal
 from app.models.tender import Tender
 from app.models.company_profile import CompanyProfile
 from app.services.proposal_service import generate_proposal, extract_text_from_pdf
+from app.services.groq_client import GroqRateLimited
 
 router = APIRouter(prefix="/proposals", tags=["proposals"])
 
@@ -49,21 +50,29 @@ async def generate_proposal_endpoint(
         pdf_text = extract_text_from_pdf(pdf_bytes)
 
     # Generate proposal
-    sections = await generate_proposal(
-        tender_title=tender.title,
-        tender_authority=tender.authority or "",
-        tender_description=tender.description or "",
-        tender_budget=tender.budget_raw or "",
-        tender_deadline=tender.deadline_raw or "",
-        company_name=profile.company_name,
-        company_services=profile.services,
-        company_tech_stack=profile.tech_stack,
-        company_certifications=profile.certifications,
-        company_team_size=profile.team_size,
-        past_projects=past_projects,
-        additional_notes=additional_notes,
-        company_profile_text=pdf_text,
-    )
+    try:
+        sections = await generate_proposal(
+            tender_title=tender.title,
+            tender_authority=tender.authority or "",
+            tender_description=tender.description or "",
+            tender_budget=tender.budget_raw or "",
+            tender_deadline=tender.deadline_raw or "",
+            company_name=profile.company_name,
+            company_services=profile.services,
+            company_tech_stack=profile.tech_stack,
+            company_certifications=profile.certifications,
+            company_team_size=profile.team_size,
+            past_projects=past_projects,
+            additional_notes=additional_notes,
+            company_profile_text=pdf_text,
+        )
+    except GroqRateLimited:
+        raise HTTPException(
+            status_code=503,
+            detail="The AI service is busy (rate limit reached). Please try again in a minute.",
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Proposal generation failed: {exc}")
 
     # Save to DB
     proposal = Proposal(

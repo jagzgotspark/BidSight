@@ -7,248 +7,14 @@ from typing import Optional
 import httpx
 from bs4 import BeautifulSoup
 
+from scraper.classify import classify
 from scraper.models.tender import Tender, TenderCategory, TenderSource, TenderStatus
 from scraper.scrapers.base import BaseScraper
 
-_CATEGORY_KEYWORDS: dict[TenderCategory, list[str]] = {
-    # IT-related — checked first since "security" etc. could clash with physical security services
-    TenderCategory.IT_SOFTWARE: [
-        "software",
-        "erp",
-        "mobile app",
-        "web",
-        "portal",
-        "application",
-        "crm",
-    ],
-    TenderCategory.CLOUD: [
-        "cloud",
-        "aws",
-        "azure",
-        "saas",
-        "hosting",
-        "data center service",
-    ],
-    TenderCategory.AI_ML: [
-        "artificial intelligence",
-        "machine learning",
-        " ai ",
-        "ml model",
-        "data science",
-        "analytics platform",
-    ],
-    TenderCategory.CYBERSECURITY: [
-        "cyber security",
-        "vapt",
-        "penetration test",
-        "firewall",
-        "soc service",
-    ],
-    TenderCategory.CONSULTING: [
-        "consulting",
-        "advisory",
-        "consultancy",
-        "assessment study",
-    ],
-    TenderCategory.INFRASTRUCTURE: [
-        "network",
-        "cabling",
-        "datacenter",
-        "data centre",
-        "it storage",
-    ],
-    TenderCategory.HARDWARE: [
-        "laptop",
-        "desktop",
-        "computer",
-        "printer",
-        "server hardware",
-        "ups",
-        "projector",
-    ],
-    # Non-IT — the bulk of real GeM volume
-    TenderCategory.MEDICAL: [
-        "medical",
-        "hospital",
-        "surgical",
-        "pharma",
-        "drug",
-        "tab.",
-        "syringe",
-        "catheter",
-        "diagnostic",
-        "x-ray",
-        "ventilator",
-        "ambulance",
-        "laryngoscope",
-        "endoscop",
-        "laparoscop",
-        "airway scope",
-        "nerve monitoring",
-        "elispot",
-        "antibiotic",
-        "biochemistry",
-        "microbiology",
-        "mr imaging",
-        "gamma knife",
-        "aiims",
-        "clinical",
-        "operative",
-        "patient",
-        "icu",
-        "dialysis",
-        "oxygen concentrator",
-        "defibrillator",
-        "analyzer",
-        "reagent",
-        "consumables for",
-        "bronchoscope",
-        "nephelometer",
-        "microplate",
-        "chemiluminescence",
-        "immunoassay",
-        "pcr system",
-        "absorptiometry",
-        "dexa",
-        "coagulation",
-        "gamma globulin",
-        "thromboelast",
-        "cytology",
-        "hematology",
-        "transfusion",
-        "pulmonary medicine",
-        "department of",
-        "rate contract for supply of",
-    ],
-    TenderCategory.CONSTRUCTION: [
-        "construction",
-        "civil work",
-        "building work",
-        "renovation",
-        "road work",
-        "infrastructure work",
-        "tender for construction",
-        "patch repair",
-        "extension of building",
-        "repair of road",
-    ],
-    TenderCategory.EQUIPMENT_MACHINERY: [
-        "earth moving",
-        "excavator",
-        "dumper",
-        "tractor",
-        "crane",
-        "generator",
-        "compressor",
-        "machine",
-        "machinery",
-        "equipment hire",
-    ],
-    TenderCategory.VEHICLES: [
-        "vehicle",
-        "bus",
-        "car",
-        "ambulance",
-        "two wheeler",
-        "motor cycle",
-        "tipper",
-    ],
-    TenderCategory.FURNITURE: [
-        "furniture",
-        "chair",
-        "table",
-        "almirah",
-        "cabinet",
-        "desk",
-        "sofa",
-    ],
-    TenderCategory.ELECTRICAL: [
-        "electrical",
-        "wiring",
-        "transformer",
-        "switchgear",
-        "cable",
-        "led light",
-        "solar panel",
-    ],
-    TenderCategory.TEXTILES_APPAREL: [
-        "uniform",
-        "textile",
-        "fabric",
-        "garment",
-        "apparel",
-        "shoes",
-        "footwear",
-    ],
-    TenderCategory.FOOD_CATERING: [
-        "catering",
-        "food supply",
-        "ration",
-        "canteen",
-        "meal",
-    ],
-    TenderCategory.OFFICE_SUPPLIES: [
-        "stationery",
-        "paper",
-        "printing service",
-        "office supply",
-    ],
-    TenderCategory.SECURITY_SERVICES: [
-        "security guard",
-        "security service",
-        "manpower security",
-        "watchman",
-    ],
-    TenderCategory.MAINTENANCE_AMC: [
-        "amc",
-        "annual maintenance",
-        "cmc",
-        "housekeeping",
-        "facility management",
-        "repair and overhauling",
-        "repair, maintenance",
-        "overhaul",
-    ],
-    TenderCategory.INDUSTRIAL_PARTS: [
-        "bearing",
-        "valve",
-        "gasket",
-        "shelving rack",
-        "ballast block",
-        "union 1/2",
-        "spare part",
-        "industrial component",
-        "vacuum cleaner",
-        "cylinder",
-        "skid steer",
-    ],
-    TenderCategory.DEFENSE_MARINE: [
-        "submarine",
-        "naval",
-        "marine unit",
-        "battery type",
-        "tps",
-        "ugssn",
-        "kpcl",
-        "defence",
-        "armed forces",
-    ],
-    TenderCategory.LIBRARY_PUBLISHING: [
-        "database subscription",
-        "library",
-        "journal",
-        "publication",
-        "signage",
-    ],
-}
-
 
 def _classify(title: str, description: str = "") -> TenderCategory:
-    text = (title + " " + description).lower()
-    for category, keywords in _CATEGORY_KEYWORDS.items():
-        if any(kw in text for kw in keywords):
-            return category
-    return TenderCategory.OTHER
+    # Kept as a shim: the CPPP and GeM stealth scrapers import it from here
+    return classify(title, description)
 
 
 def _parse_inr(raw: str) -> Optional[float]:
@@ -267,6 +33,18 @@ def _parse_inr(raw: str) -> Optional[float]:
         return float(cleaned) * multiplier
     except ValueError:
         return None
+
+
+def _parse_disclosed_value(raw: str) -> tuple[str, Optional[float]]:
+    """
+    Normalise a tender value read from a detail page or bid document.
+    Returns (budget_raw, budget_max). Undisclosed values ("NA", blank, 0) come
+    back as ("NA", None) so the row is marked as checked rather than left blank.
+    """
+    amount = _parse_inr(raw)
+    if not amount or amount <= 0:
+        return "NA", None
+    return raw.strip(), amount
 
 
 def _parse_date(raw: str) -> Optional[datetime]:

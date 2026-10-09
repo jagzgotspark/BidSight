@@ -96,6 +96,7 @@ def get_match_scores(
 
 @router.post("/score/{tender_id}")
 async def score_single_tender(
+    tender_id: str,
     db: Session = Depends(get_db),
     user_id: str = Depends(get_current_user),
 ):

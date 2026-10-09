@@ -6,6 +6,8 @@ import { TenderListResponse } from "@/types/tender";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 import TenderCard from "./TenderCard";
+import TopMatches, { TOP_MATCHES_KEY, TOP_MATCH_THRESHOLD } from "./TopMatches";
+import { CATEGORIES } from "@/lib/tenderUtils";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect, useRef } from "react";
@@ -73,6 +75,9 @@ export default function TenderFeed() {
               ),
             };
           });
+          if (match_score >= TOP_MATCH_THRESHOLD) {
+            qc.invalidateQueries({ queryKey: TOP_MATCHES_KEY });
+          }
         } catch {
           // Leave unscored — card will show "Not scored yet"
         }
@@ -89,6 +94,7 @@ export default function TenderFeed() {
 
   return (
     <div className="space-y-4">
+      <TopMatches />
       <div className="flex gap-3 flex-wrap">
         <Input placeholder="Search tenders..." className="max-w-xs"
           value={search}
@@ -109,28 +115,9 @@ export default function TenderFeed() {
           <SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
-            <SelectItem value="it_software">IT / Software</SelectItem>
-            <SelectItem value="cloud">Cloud</SelectItem>
-            <SelectItem value="ai_ml">AI / ML</SelectItem>
-            <SelectItem value="cybersecurity">Cybersecurity</SelectItem>
-            <SelectItem value="consulting">Consulting</SelectItem>
-            <SelectItem value="infrastructure">Infrastructure</SelectItem>
-            <SelectItem value="hardware">Hardware</SelectItem>
-            <SelectItem value="medical">Medical</SelectItem>
-            <SelectItem value="construction">Construction</SelectItem>
-            <SelectItem value="equipment_machinery">Equipment & Machinery</SelectItem>
-            <SelectItem value="vehicles">Vehicles</SelectItem>
-            <SelectItem value="furniture">Furniture</SelectItem>
-            <SelectItem value="electrical">Electrical</SelectItem>
-            <SelectItem value="textiles_apparel">Textiles & Apparel</SelectItem>
-            <SelectItem value="food_catering">Food & Catering</SelectItem>
-            <SelectItem value="office_supplies">Office Supplies</SelectItem>
-            <SelectItem value="security_services">Security Services</SelectItem>
-            <SelectItem value="maintenance_amc">Maintenance / AMC</SelectItem>
-            <SelectItem value="industrial_parts">Industrial Parts</SelectItem>
-            <SelectItem value="defense_marine">Defense & Marine</SelectItem>
-            <SelectItem value="library_publishing">Library & Publishing</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+            {CATEGORIES.map((c) => (
+              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
