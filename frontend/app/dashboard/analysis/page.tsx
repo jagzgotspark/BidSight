@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@clerk/nextjs";
 import api from "@/lib/api";
 
 interface KeyDate { label: string; date: string; }
@@ -29,6 +30,7 @@ export default function AnalysisPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<Analysis | null>(null);
+  const { getToken } = useAuth();
 
   const { data: tenders } = useQuery({
     queryKey: ["tenders-for-analysis"],
@@ -44,8 +46,9 @@ export default function AnalysisPage() {
       const fd = new FormData();
       fd.append("file", file);
       if (tenderId) fd.append("tender_id", tenderId);
+      const token = await getToken();
       const res = await api.post("/analysis/document", fd, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": "multipart/form-data", Authorization: `Bearer ${token}` },
       });
       setResult(res.data);
     } catch (e: any) {

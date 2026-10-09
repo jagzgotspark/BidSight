@@ -98,18 +98,28 @@ async def generate_proposal_endpoint(
 
 
 @router.get("/{proposal_id}")
-def get_proposal(proposal_id: str, db: Session = Depends(get_db)):
-    """Get a saved proposal."""
-    proposal = db.query(Proposal).filter(Proposal.id == proposal_id).first()
+def get_proposal(
+    proposal_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
+):
+    """Get one of the current user's saved proposals."""
+    proposal = db.query(Proposal).filter(
+        Proposal.id == proposal_id, Proposal.user_id == user_id
+    ).first()
     if not proposal:
         raise HTTPException(status_code=404, detail="Proposal not found")
     return proposal
 
 
 @router.get("/tender/{tender_id}")
-def get_proposals_for_tender(tender_id: str, db: Session = Depends(get_db)):
-    """Get all proposals for a tender."""
+def get_proposals_for_tender(
+    tender_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
+):
+    """Get the current user's proposals for a tender."""
     proposals = db.query(Proposal).filter(
-        Proposal.tender_id == tender_id
+        Proposal.tender_id == tender_id, Proposal.user_id == user_id
     ).order_by(Proposal.created_at.desc()).all()
     return proposals

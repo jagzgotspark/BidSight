@@ -6,6 +6,7 @@ from pypdf import PdfReader
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.dependencies.auth import get_current_user
 from app.models.tender import Tender
 from app.services.document_analysis_service import analyze_document
 
@@ -22,6 +23,7 @@ async def analyze(
     file: UploadFile = File(...),
     tender_id: str | None = Form(None),
     db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
 ):
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Please upload a PDF file.")

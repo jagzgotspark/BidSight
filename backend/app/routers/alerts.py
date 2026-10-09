@@ -24,8 +24,8 @@ def unread_count(db: Session = Depends(get_db), user_id: str = Depends(get_curre
 
 
 @router.post("/{alert_id}/read")
-def mark_read(alert_id: str, db: Session = Depends(get_db)):
-    a = db.query(Alert).filter(Alert.id == alert_id).first()
+def mark_read(alert_id: str, db: Session = Depends(get_db), user_id: str = Depends(get_current_user)):
+    a = db.query(Alert).filter(Alert.id == alert_id, Alert.user_id == user_id).first()
     if not a:
         raise HTTPException(status_code=404, detail="Alert not found")
     a.is_read = True
@@ -43,7 +43,7 @@ def mark_all_read(db: Session = Depends(get_db), user_id: str = Depends(get_curr
 
 
 @router.post("/scan")
-def scan_now(db: Session = Depends(get_db)):
+def scan_now(db: Session = Depends(get_db), user_id: str = Depends(get_current_user)):
     """Manually trigger a deadline scan (same logic the Celery task runs)."""
     from app.services.alert_service import scan_and_create_alerts
     return scan_and_create_alerts(db)

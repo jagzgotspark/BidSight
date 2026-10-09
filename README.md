@@ -15,8 +15,10 @@ AI-powered government tender discovery platform for the Indian market. BidSight 
 ## What it does
 
 - **Scrapes real government tenders** from GeM (Government e-Marketplace) and CPPP (Central Public Procurement Portal) using Playwright with stealth mode
-- **Scores every tender 0–100** against your company profile (services, tech stack, certifications, geography) using Groq Llama 3
-- **Proactive match alerts** — notifies you when newly scraped tenders cross your score threshold
+- **Scores every tender 0–100** against your company profile (services, tech stack, certifications, geography) using an LLM on Groq (`qwen/qwen3.8-27b` by default, set via `GROQ_MODEL`)
+- **Top matches** — active tenders scoring 80%+ are pinned at the top of the feed, and every user with a profile gets an alert when a new one appears
+- **Keyword categorisation** — 28 categories (construction, roads, medical, lab equipment, IT, manpower…) matched on whole words with weighted scoring (`scraper/classify.py`)
+- **Budget extraction** — tender value read from CPPP detail pages and GeM bid-document PDFs
 - **Bid pipeline CRM** — drag-and-drop Kanban board across 7 stages (New → Interested → Evaluating → Drafting → Submitted → Won/Lost)
 - **Deadline alerts** — in-app notifications at 30/14/7/3/1-day thresholds, deduped per bid
 - **AI proposal generator** — 6-section technical proposal draft from your company profile + optional PDF upload
@@ -34,11 +36,11 @@ flowchart LR
     CELERY[Celery Beat\nScheduler] -->|subprocess| SCRAPER
     CELERY -->|in-process| ALERTS[Alert Service]
     DB <--> API[FastAPI\nREST API]
-    API <-->|match scoring\nproposals\ndoc analysis| GROQ[Groq\nLlama 3.1]
+    API <-->|match scoring\nproposals\ndoc analysis| GROQ[Groq\nQwen 3.8]
     FRONTEND[Next.js 15\nDashboard] <-->|React Query| API
 ```
 
-**Stack:** FastAPI · PostgreSQL · Redis · SQLAlchemy + Alembic · Playwright · Groq (Llama 3.1) · Next.js 15 · React Query · Tailwind + shadcn/ui · Recharts · Celery · Docker Compose
+**Stack:** FastAPI · PostgreSQL · Redis · SQLAlchemy + Alembic · Playwright · Groq (Qwen 3.8) · Next.js 15 · React Query · Tailwind + shadcn/ui · Recharts · Celery · Docker Compose
 
 ---
 
@@ -78,17 +80,17 @@ This adds operational complexity (two venvs to manage) but keeps the backend on 
 
 ### 5. AI scoring: Groq over OpenAI, and known calibration limits
 
-Groq's free tier (Llama 3.1 8b instant) was chosen over OpenAI for cost — this is a portfolio project, not a funded product. The tradeoff is quality: the model clusters scores around 30–40% regardless of actual fit, because it lacks the few-shot calibration examples that would teach it what a 90% match looks like for this domain.
+Groq's free tier was chosen over OpenAI for cost — this is a portfolio project, not a funded product. The project started on Llama 3.1 8b instant, which clustered scores around 30–40% regardless of fit. The scoring prompt now includes three labelled few-shot examples (a strong, moderate and poor fit) and asks the model to use the full range, which spreads scores out (e.g. 82 / 78 / 62 / 45 across real IT tenders). Groq later retired Llama 3.1 8b, so the model is configurable via `GROQ_MODEL` (default `qwen/qwen3.8-27b`).
 
-The current scoring is useful for relative ranking (a 70 is a better fit than a 35) but the absolute numbers are not reliable. The right fix is few-shot prompting with labelled examples, or a calibration pass that maps raw scores to outcomes. This is documented as a known limitation rather than papered over with fabricated accuracy stats.
+Scores are still an LLM's judgement, not a validated metric — useful for ranking, and no accuracy figures are claimed.
 
-Rate limiting (Groq's 429s) is handled with exponential backoff and `Retry-After` header respect in `match_service.py`. The frontend scores tenders sequentially, not in parallel, to avoid bursting the rate limit.
+The free tier allows 8,000 tokens per minute. All Groq calls go through `app/services/groq_client.py`, which retries 429s using the `Retry-After` header for up to a minute. The frontend scores tenders one at a time to avoid bursting the limit. A full 6-section proposal is ~10k tokens, so on the free tier it takes about two minutes.
 
-### 6. No authentication (by choice, for now)
+### 6. Authentication and plans
 
-Auth was deferred deliberately. Adding Clerk or any auth system creates a dependency chain: auth → user isolation → plan gating → billing. Building billing without auth is wasted work; building auth without a billing reason is over-engineering for a demo.
+Auth was deferred until billing gave it a reason, then added with Clerk: the frontend gets a Clerk session token and the API verifies the JWT (`app/dependencies/auth.py`). Company profiles, bids, alerts and proposals are scoped to the signed-in user. Proposal drafting and analytics are gated to the Professional plan (`require_professional_plan`). Starter is meant to be capped at 10 AI scores a day; see limitations.
 
-Everything is hardcoded to `demo_user`. This is honest about the project's current scope and keeps the codebase focused on the features that demonstrate AI and system design judgment — which is what this portfolio project is actually for.
+Tender listings are public data and stay readable without login. Match scores are stored on the tender row, so they are shared across users rather than computed per profile — fine for a single company, listed below as a limitation.
 
 ---
 
@@ -266,7 +268,7 @@ celery -A scraper.tasks.scrape beat --loglevel=info
 
 | Endpoint | Description |
 |---|---|
-| `GET /api/v1/tenders/` | List tenders with filters (source, category, search) |
+| `GET /api/v1/tenders/` | List tenders with filters (source, category, search, `min_score`) and `sort=newest\|score` |
 | `GET /api/v1/tenders/{id}` | Tender detail |
 | `POST /api/v1/match/profile` | Create/update company profile |
 | `GET /api/v1/match/profile` | Get current company profile |
@@ -276,7 +278,7 @@ celery -A scraper.tasks.scrape beat --loglevel=info
 | `GET /api/v1/analytics/overview` | Dashboard analytics |
 | `GET /api/v1/alerts/` | List alerts (deadline + match) |
 | `POST /api/v1/alerts/scan` | Trigger deadline alert scan |
-| `POST /api/v1/alerts/scan-matches` | Trigger match alert scan |
+| `POST /api/v1/alerts/scan-matches` | Trigger match alert scan for the signed-in user |
 | `POST /api/v1/analysis/document` | Analyse tender PDF (multipart) |
 
 Interactive docs at `http://localhost:8000/docs`.
@@ -285,15 +287,19 @@ Interactive docs at `http://localhost:8000/docs`.
 
 ## Known limitations
 
-- **Match score calibration** — the model clusters scores around 30–40% regardless of fit. Scores are useful for relative ranking but absolute numbers are not reliable. Fix: few-shot prompting with labelled examples.
+- **Match scores are shared, not per user** — the score is stored on the tender, computed against whichever profile scored it first. Correct for one company; multi-company use needs a `tender_scores(user_id, tender_id)` table.
+- **Starter scoring cap isn't enforced per day** — `STARTER_DAILY_SCORE_LIMIT` only trims the bulk `GET /match/score` request; the per-tender `POST /match/score/{id}` the feed uses has no daily counter yet.
+- **Groq free-tier limits** — 8k tokens/minute makes proposal generation take ~2 minutes; generating all sections in one call or a paid tier would fix it.
+- **Keyword categorisation** — some tenders stay in "Other" (mostly titles that are only reference numbers, e.g. `28006/Engr/MW-11/2026-27/11`).
 - **Budget data** — budgets come from each tender's detail page (CPPP "Tender Value in ₹") or bid document PDF (GeM "Estimated Bid Value"). Buyers can choose not to disclose it, so some tenders show "Value not disclosed". CPPP fetches at most `CPPP_MAX_DETAILS` (default 200) detail pages per run, so a backlog fills in over several runs.
-- **No authentication** — everything runs as `demo_user`. Clerk integration is the prerequisite for multi-tenancy and billing.
 - **Two venvs** — Python 3.13/3.11 split adds operational overhead. Documented in setup; worth it to keep the backend on a current runtime.
 
 ## Roadmap
 
-- [ ] Match score calibration (few-shot prompting)
-- [ ] Real authentication (Clerk)
-- [ ] Budget extraction from tender detail pages
+- [x] Match score calibration (few-shot prompting)
+- [x] Real authentication (Clerk)
+- [x] Budget extraction from tender detail pages
+- [ ] Per-user match scores
+- [ ] Single-call proposal generation (faster on the free tier)
 - [ ] Auto-fetch tender documents for analysis (currently upload-only)
 - [ ] Deployment (Fly.io backend + Vercel frontend)
