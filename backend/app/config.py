@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     razorpay_key_secret: str = ""
     razorpay_webhook_secret: str = ""
 
+    # Dev-only: auto-grant the Professional plan to every request instead of
+    # requiring a real Razorpay payment. Never set this in production.
+    billing_dev_bypass: bool = False
+
     class Config:
         env_file = ".env"
         case_sensitive = False

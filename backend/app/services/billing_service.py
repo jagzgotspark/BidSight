@@ -162,6 +162,15 @@ def handle_webhook_event(db: Session, event: dict) -> None:
 
 
 def get_status(db: Session, user_id: str) -> dict:
+    settings = get_settings()
+    if settings.billing_dev_bypass and settings.environment != "production":
+        return {
+            "plan": "professional",
+            "status": "active",
+            "current_period_end": datetime.utcnow() + timedelta(days=30),
+            "is_active": True,
+        }
+
     sub = (
         db.query(Subscription)
         .filter(Subscription.user_id == user_id, Subscription.status == "active")

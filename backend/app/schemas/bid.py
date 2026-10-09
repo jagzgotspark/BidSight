@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import datetime
 
@@ -10,11 +10,16 @@ class BidCreate(BaseModel):
 
 
 class BidUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     stage: Optional[str] = None
     notes: Optional[str] = None
+    match_score: Optional[float] = None
 
 
 class BidResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: str
     user_id: str
     tender_id: str
@@ -30,6 +35,3 @@ class BidResponse(BaseModel):
     tender_deadline: Optional[datetime] = None
     tender_budget_raw: Optional[str] = None
     tender_source: Optional[str] = None
-
-    class Config:
-        from_attributes = True

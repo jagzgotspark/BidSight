@@ -107,6 +107,7 @@ def _parse_api_response(data: dict) -> list[Tender]:
             print(f"  Doc error: {exc}")
     return tenders
 
+
 def _normalise_doc(doc: dict) -> Tender:
     def first(val):
         if isinstance(val, list):
@@ -114,7 +115,9 @@ def _normalise_doc(doc: dict) -> Tender:
         return val or ""
 
     bid_number = str(first(doc.get("b_bid_number", "")))
-    title = str(first(doc.get("b_category_name") or doc.get("bd_category_name", ""))).strip()
+    title = str(
+        first(doc.get("b_category_name") or doc.get("bd_category_name", ""))
+    ).strip()
     ministry = str(first(doc.get("ba_official_details_minName", ""))).strip()
     dept = str(first(doc.get("ba_official_details_deptName", ""))).strip()
     authority = ministry if ministry else dept
@@ -128,12 +131,20 @@ def _normalise_doc(doc: dict) -> Tender:
     def parse_gem_date(raw: str):
         if not raw:
             return None
+        value = raw.strip()
+        if value.endswith("Z"):
+            value = value[:-1] + "+00:00"
         try:
-            return datetime.strptime(raw, "%Y-%m-%dT%H:%M:%SZ")
+            return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
         except ValueError:
-            return None
+            try:
+                return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S")
+            except ValueError:
+                return None
 
-    source_url = f"https://bidplus.gem.gov.in/viewbid/{bid_number}" if bid_number else ""
+    source_url = (
+        f"https://bidplus.gem.gov.in/viewbid/{bid_number}" if bid_number else ""
+    )
 
     return Tender(
         tender_id=bid_number or bid_id or title[:40],
@@ -150,7 +161,6 @@ def _normalise_doc(doc: dict) -> Tender:
         status=TenderStatus.ACTIVE,
         source_url=source_url,
     )
-
 
 
 async def main():
@@ -171,6 +181,7 @@ async def main():
 
     # Save to DB
     from dotenv import load_dotenv
+
     load_dotenv(os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
 
     from app.database import SessionLocal
@@ -185,26 +196,29 @@ async def main():
         print("All already in DB.")
         return
 
-    tender_dicts = [{
-        "id": t.fingerprint,
-        "tender_id": t.tender_id,
-        "source": t.source.value,
-        "title": t.title,
-        "description": t.description,
-        "authority": t.authority,
-        "location": t.location,
-        "category": t.category.value,
-        "budget_min": t.budget_min,
-        "budget_max": t.budget_max,
-        "budget_raw": t.budget_raw,
-        "published_at": t.published_at,
-        "deadline": t.deadline,
-        "deadline_raw": t.deadline_raw,
-        "status": t.status.value,
-        "source_url": t.source_url,
-        "eligibility_raw": t.eligibility_raw,
-        "scraped_at": t.scraped_at,
-    } for t in new_tenders]
+    tender_dicts = [
+        {
+            "id": t.fingerprint,
+            "tender_id": t.tender_id,
+            "source": t.source.value,
+            "title": t.title,
+            "description": t.description,
+            "authority": t.authority,
+            "location": t.location,
+            "category": t.category.value,
+            "budget_min": t.budget_min,
+            "budget_max": t.budget_max,
+            "budget_raw": t.budget_raw,
+            "published_at": t.published_at,
+            "deadline": t.deadline,
+            "deadline_raw": t.deadline_raw,
+            "status": t.status.value,
+            "source_url": t.source_url,
+            "eligibility_raw": t.eligibility_raw,
+            "scraped_at": t.scraped_at,
+        }
+        for t in new_tenders
+    ]
 
     db = SessionLocal()
     try:
@@ -227,13 +241,14 @@ async def main():
             try:
                 # Fetch the saved tender object
                 from app.models.tender import Tender as TenderORM
-                tender_obj = db.query(TenderORM).filter(
-                    TenderORM.id == t.fingerprint
-                ).first()
+
+                tender_obj = (
+                    db.query(TenderORM).filter(TenderORM.id == t.fingerprint).first()
+                )
                 if tender_obj:
                     result = await score_tender(tender_obj, profile)
-                    tender_obj.match_score = result['score']
-                    tender_obj.match_reasoning = result['reasoning']
+                    tender_obj.match_score = result["score"]
+                    tender_obj.match_reasoning = result["reasoning"]
                     db.commit()
                     scored += 1
                     print(f"  {result['score']}% — {tender_obj.title[:50]}")
@@ -243,7 +258,6 @@ async def main():
         print(f"✓ Scored {scored} tenders")
     else:
         print("  No company profile found — set one up at POST /api/v1/match/profile")
-
 
 
 if __name__ == "__main__":

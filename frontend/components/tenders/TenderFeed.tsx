@@ -2,7 +2,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import axios from "axios";
-import { Tender, TenderListResponse } from "@/types/tender";
+import { TenderListResponse } from "@/types/tender";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
 import TenderCard from "./TenderCard";
@@ -14,18 +14,19 @@ export default function TenderFeed() {
   const [search, setSearch] = useState("");
   const [source, setSource] = useState("all");
   const [category, setCategory] = useState("all");
+  const [page, setPage] = useState(1);
   const [scoringId, setScoringId] = useState<string | null>(null);
   const attempted = useRef<Set<string>>(new Set());
   const qc = useQueryClient();
   const { getToken } = useAuth();
 
-  const queryKey = ["tenders", search, source, category];
+  const queryKey = ["tenders", search, source, category, page];
 
   const { data, isLoading, isError } = useQuery<TenderListResponse>({
     queryKey,
     queryFn: async () => {
       const token = await getToken();
-      const params: Record<string, string> = {};
+      const params: Record<string, string> = { page: String(page) };
       if (search) params.search = search;
       if (source !== "all") params.source = source;
       if (category !== "all") params.category = category;
@@ -35,6 +36,10 @@ export default function TenderFeed() {
       });
       return res.data;
     },
+    refetchInterval: 60000,
+    refetchIntervalInBackground: true,
+    refetchOnWindowFocus: true,
+    staleTime: 30000,
   });
 
   // Background scoring queue: score unscored tenders one at a time
@@ -86,8 +91,13 @@ export default function TenderFeed() {
     <div className="space-y-4">
       <div className="flex gap-3 flex-wrap">
         <Input placeholder="Search tenders..." className="max-w-xs"
-          value={search} onChange={(e) => setSearch(e.target.value)} />
-        <Select value={source} onValueChange={setSource}>
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+        />
+        <Select value={source} onValueChange={(value) => { setSource(value); setPage(1); }}>
           <SelectTrigger className="w-36"><SelectValue placeholder="Source" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All sources</SelectItem>
@@ -95,7 +105,7 @@ export default function TenderFeed() {
             <SelectItem value="cppp">CPPP</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={category} onValueChange={setCategory}>
+        <Select value={category} onValueChange={(value) => { setCategory(value); setPage(1); }}>
           <SelectTrigger className="w-44"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
@@ -134,7 +144,29 @@ export default function TenderFeed() {
         <TenderCard key={tender.id} tender={tender} isScoring={scoringId === tender.id} />
       ))}
       {data && data.total > 0 && (
-        <p className="text-xs text-muted-foreground text-right">Showing {data.items.length} of {data.total} tenders</p>
+        <div className="flex items-center justify-between gap-3 pt-2">
+          <p className="text-xs text-muted-foreground">
+            Showing {data.items.length} of {data.total} tenders · Page {page} / {data.pages}
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              className="rounded border px-3 py-1.5 text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              type="button"
+              disabled={page >= data.pages}
+              onClick={() => setPage((current) => current + 1)}
+              className="rounded border px-3 py-1.5 text-xs disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

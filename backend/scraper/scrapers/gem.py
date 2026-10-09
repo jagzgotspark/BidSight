@@ -12,31 +12,235 @@ from scraper.scrapers.base import BaseScraper
 
 _CATEGORY_KEYWORDS: dict[TenderCategory, list[str]] = {
     # IT-related — checked first since "security" etc. could clash with physical security services
-    TenderCategory.IT_SOFTWARE: ["software", "erp", "mobile app", "web", "portal", "application", "crm"],
-    TenderCategory.CLOUD: ["cloud", "aws", "azure", "saas", "hosting", "data center service"],
-    TenderCategory.AI_ML: ["artificial intelligence", "machine learning", " ai ", "ml model", "data science", "analytics platform"],
-    TenderCategory.CYBERSECURITY: ["cyber security", "vapt", "penetration test", "firewall", "soc service"],
-    TenderCategory.CONSULTING: ["consulting", "advisory", "consultancy", "assessment study"],
-    TenderCategory.INFRASTRUCTURE: ["network", "cabling", "datacenter", "data centre", "it storage"],
-    TenderCategory.HARDWARE: ["laptop", "desktop", "computer", "printer", "server hardware", "ups", "projector"],
-
+    TenderCategory.IT_SOFTWARE: [
+        "software",
+        "erp",
+        "mobile app",
+        "web",
+        "portal",
+        "application",
+        "crm",
+    ],
+    TenderCategory.CLOUD: [
+        "cloud",
+        "aws",
+        "azure",
+        "saas",
+        "hosting",
+        "data center service",
+    ],
+    TenderCategory.AI_ML: [
+        "artificial intelligence",
+        "machine learning",
+        " ai ",
+        "ml model",
+        "data science",
+        "analytics platform",
+    ],
+    TenderCategory.CYBERSECURITY: [
+        "cyber security",
+        "vapt",
+        "penetration test",
+        "firewall",
+        "soc service",
+    ],
+    TenderCategory.CONSULTING: [
+        "consulting",
+        "advisory",
+        "consultancy",
+        "assessment study",
+    ],
+    TenderCategory.INFRASTRUCTURE: [
+        "network",
+        "cabling",
+        "datacenter",
+        "data centre",
+        "it storage",
+    ],
+    TenderCategory.HARDWARE: [
+        "laptop",
+        "desktop",
+        "computer",
+        "printer",
+        "server hardware",
+        "ups",
+        "projector",
+    ],
     # Non-IT — the bulk of real GeM volume
-    TenderCategory.MEDICAL: ["medical", "hospital", "surgical", "pharma", "drug", "tab.", "syringe", "catheter", "diagnostic", "x-ray", "ventilator", "ambulance", "laryngoscope", "endoscop", "laparoscop", "airway scope", "nerve monitoring", "elispot", "antibiotic", "biochemistry", "microbiology", "mr imaging", "gamma knife", "aiims", "clinical", "operative", "patient", "icu", "dialysis", "oxygen concentrator", "defibrillator", "analyzer", "reagent", "consumables for", "bronchoscope", "nephelometer", "microplate", "chemiluminescence", "immunoassay", "pcr system", "absorptiometry", "dexa", "coagulation", "gamma globulin", "thromboelast", "cytology", "hematology", "transfusion", "pulmonary medicine", "department of", "rate contract for supply of"],
-    TenderCategory.CONSTRUCTION: ["construction", "civil work", "building work", "renovation", "road work", "infrastructure work", "tender for construction", "patch repair", "extension of building", "repair of road"],
-    TenderCategory.EQUIPMENT_MACHINERY: ["earth moving", "excavator", "dumper", "tractor", "crane", "generator", "compressor", "machine", "machinery", "equipment hire"],
-    TenderCategory.VEHICLES: ["vehicle", "bus", "car", "ambulance", "two wheeler", "motor cycle", "tipper"],
-    TenderCategory.FURNITURE: ["furniture", "chair", "table", "almirah", "cabinet", "desk", "sofa"],
-    TenderCategory.ELECTRICAL: ["electrical", "wiring", "transformer", "switchgear", "cable", "led light", "solar panel"],
-    TenderCategory.TEXTILES_APPAREL: ["uniform", "textile", "fabric", "garment", "apparel", "shoes", "footwear"],
-    TenderCategory.FOOD_CATERING: ["catering", "food supply", "ration", "canteen", "meal"],
-    TenderCategory.OFFICE_SUPPLIES: ["stationery", "paper", "printing service", "office supply"],
-    TenderCategory.SECURITY_SERVICES: ["security guard", "security service", "manpower security", "watchman"],
-    TenderCategory.MAINTENANCE_AMC: ["amc", "annual maintenance", "cmc", "housekeeping", "facility management", "repair and overhauling", "repair, maintenance", "overhaul"],
-    TenderCategory.INDUSTRIAL_PARTS: ["bearing", "valve", "gasket", "shelving rack", "ballast block", "union 1/2", "spare part", "industrial component", "vacuum cleaner", "cylinder", "skid steer"],
-    TenderCategory.DEFENSE_MARINE: ["submarine", "naval", "marine unit", "battery type", "tps", "ugssn", "kpcl", "defence", "armed forces"],
-    TenderCategory.LIBRARY_PUBLISHING: ["database subscription", "library", "journal", "publication", "signage"],
+    TenderCategory.MEDICAL: [
+        "medical",
+        "hospital",
+        "surgical",
+        "pharma",
+        "drug",
+        "tab.",
+        "syringe",
+        "catheter",
+        "diagnostic",
+        "x-ray",
+        "ventilator",
+        "ambulance",
+        "laryngoscope",
+        "endoscop",
+        "laparoscop",
+        "airway scope",
+        "nerve monitoring",
+        "elispot",
+        "antibiotic",
+        "biochemistry",
+        "microbiology",
+        "mr imaging",
+        "gamma knife",
+        "aiims",
+        "clinical",
+        "operative",
+        "patient",
+        "icu",
+        "dialysis",
+        "oxygen concentrator",
+        "defibrillator",
+        "analyzer",
+        "reagent",
+        "consumables for",
+        "bronchoscope",
+        "nephelometer",
+        "microplate",
+        "chemiluminescence",
+        "immunoassay",
+        "pcr system",
+        "absorptiometry",
+        "dexa",
+        "coagulation",
+        "gamma globulin",
+        "thromboelast",
+        "cytology",
+        "hematology",
+        "transfusion",
+        "pulmonary medicine",
+        "department of",
+        "rate contract for supply of",
+    ],
+    TenderCategory.CONSTRUCTION: [
+        "construction",
+        "civil work",
+        "building work",
+        "renovation",
+        "road work",
+        "infrastructure work",
+        "tender for construction",
+        "patch repair",
+        "extension of building",
+        "repair of road",
+    ],
+    TenderCategory.EQUIPMENT_MACHINERY: [
+        "earth moving",
+        "excavator",
+        "dumper",
+        "tractor",
+        "crane",
+        "generator",
+        "compressor",
+        "machine",
+        "machinery",
+        "equipment hire",
+    ],
+    TenderCategory.VEHICLES: [
+        "vehicle",
+        "bus",
+        "car",
+        "ambulance",
+        "two wheeler",
+        "motor cycle",
+        "tipper",
+    ],
+    TenderCategory.FURNITURE: [
+        "furniture",
+        "chair",
+        "table",
+        "almirah",
+        "cabinet",
+        "desk",
+        "sofa",
+    ],
+    TenderCategory.ELECTRICAL: [
+        "electrical",
+        "wiring",
+        "transformer",
+        "switchgear",
+        "cable",
+        "led light",
+        "solar panel",
+    ],
+    TenderCategory.TEXTILES_APPAREL: [
+        "uniform",
+        "textile",
+        "fabric",
+        "garment",
+        "apparel",
+        "shoes",
+        "footwear",
+    ],
+    TenderCategory.FOOD_CATERING: [
+        "catering",
+        "food supply",
+        "ration",
+        "canteen",
+        "meal",
+    ],
+    TenderCategory.OFFICE_SUPPLIES: [
+        "stationery",
+        "paper",
+        "printing service",
+        "office supply",
+    ],
+    TenderCategory.SECURITY_SERVICES: [
+        "security guard",
+        "security service",
+        "manpower security",
+        "watchman",
+    ],
+    TenderCategory.MAINTENANCE_AMC: [
+        "amc",
+        "annual maintenance",
+        "cmc",
+        "housekeeping",
+        "facility management",
+        "repair and overhauling",
+        "repair, maintenance",
+        "overhaul",
+    ],
+    TenderCategory.INDUSTRIAL_PARTS: [
+        "bearing",
+        "valve",
+        "gasket",
+        "shelving rack",
+        "ballast block",
+        "union 1/2",
+        "spare part",
+        "industrial component",
+        "vacuum cleaner",
+        "cylinder",
+        "skid steer",
+    ],
+    TenderCategory.DEFENSE_MARINE: [
+        "submarine",
+        "naval",
+        "marine unit",
+        "battery type",
+        "tps",
+        "ugssn",
+        "kpcl",
+        "defence",
+        "armed forces",
+    ],
+    TenderCategory.LIBRARY_PUBLISHING: [
+        "database subscription",
+        "library",
+        "journal",
+        "publication",
+        "signage",
+    ],
 }
-
 
 
 def _classify(title: str, description: str = "") -> TenderCategory:
@@ -66,17 +270,24 @@ def _parse_inr(raw: str) -> Optional[float]:
 
 
 def _parse_date(raw: str) -> Optional[datetime]:
+    value = str(raw).strip()
+    if not value:
+        return None
+    if value.endswith("Z"):
+        value = value[:-1] + "+00:00"
+
     formats = [
         "%d/%m/%Y %I:%M %p",
         "%d/%m/%Y %H:%M",
         "%d-%m-%Y %H:%M",
         "%Y-%m-%dT%H:%M:%S",
-        "%d %b %Y",
+        "%Y-%m-%dT%H:%M:%S%z",
         "%Y-%m-%d %H:%M:%S",
+        "%d %b %Y",
     ]
     for fmt in formats:
         try:
-            return datetime.strptime(str(raw).strip(), fmt)
+            return datetime.strptime(value, fmt)
         except ValueError:
             continue
     return None
@@ -87,6 +298,7 @@ class GeMScraper(BaseScraper):
     Scrapes GeM using the internal /all-bids-data JSON API.
     Discovered by intercepting XHR calls from the browser.
     """
+
     source_name = "gem"
     base_url = "https://bidplus.gem.gov.in"
     page_delay_seconds = 2.0
@@ -101,7 +313,9 @@ class GeMScraper(BaseScraper):
             "rows": self._PAGE_SIZE,
             "searchedCriteria": "",
             "byType": "all",
-            "sort": "Bid-End-Date-Oldest",
+            # Prefer the latest current opportunities instead of the near-expiry first-page view,
+            # which makes every result look like it closes tomorrow.
+            "sort": "Bid-End-Date-Newest",
         }
         # Use browser-like headers so the API doesn't block us
         headers = {
@@ -125,9 +339,7 @@ class GeMScraper(BaseScraper):
 
         # Navigate the response structure
         docs = (
-            data.get("response", {})
-                .get("response", {})
-                .get("docs", [])
+            data.get("response", {}).get("response", {}).get("docs", [])
             or data.get("docs", [])
             or []
         )
@@ -150,11 +362,19 @@ class GeMScraper(BaseScraper):
         bid_id = str(first(doc.get("id") or doc.get("b_id", "")))
         bid_number = str(first(doc.get("b_bid_number", "")))
         title = str(first(doc.get("b_category_name") or doc.get("b_title", ""))).strip()
-        authority = str(first(doc.get("b_ministry_name") or doc.get("b_dept_name", ""))).strip()
+        authority = str(
+            first(doc.get("b_ministry_name") or doc.get("b_dept_name", ""))
+        ).strip()
         location = str(first(doc.get("b_state", ""))).strip()
-        deadline_raw = str(first(doc.get("b_bid_end_date") or doc.get("b_end_date", "")))
-        published_raw = str(first(doc.get("b_publish_date") or doc.get("b_start_date", "")))
-        budget_raw = str(first(doc.get("b_estimated_amount") or doc.get("b_total_value", "")))
+        deadline_raw = str(
+            first(doc.get("b_bid_end_date") or doc.get("b_end_date", ""))
+        )
+        published_raw = str(
+            first(doc.get("b_publish_date") or doc.get("b_start_date", ""))
+        )
+        budget_raw = str(
+            first(doc.get("b_estimated_amount") or doc.get("b_total_value", ""))
+        )
 
         source_url = f"{self.base_url}/viewbid/{bid_number}" if bid_number else ""
 
@@ -178,10 +398,7 @@ class GeMScraper(BaseScraper):
         try:
             data = response.json()
             num_found = (
-                data.get("response", {})
-                    .get("response", {})
-                    .get("numFound", 0)
-                or 0
+                data.get("response", {}).get("response", {}).get("numFound", 0) or 0
             )
             return current_page * self._PAGE_SIZE < int(num_found)
         except Exception:

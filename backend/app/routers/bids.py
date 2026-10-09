@@ -10,7 +10,15 @@ from app.schemas.bid import BidCreate, BidUpdate, BidResponse
 
 router = APIRouter(prefix="/bids", tags=["bids"])
 
-VALID_STAGES = ["new", "interested", "evaluating", "drafting", "submitted", "won", "lost"]
+VALID_STAGES = [
+    "new",
+    "interested",
+    "evaluating",
+    "drafting",
+    "submitted",
+    "won",
+    "lost",
+]
 
 
 def _enrich_bid(bid: Bid, db: Session) -> dict:
@@ -60,10 +68,14 @@ def create_bid(
         raise HTTPException(status_code=404, detail="Tender not found")
 
     # Check not already in pipeline
-    existing = db.query(Bid).filter(
-        Bid.user_id == user_id,
-        Bid.tender_id == data.tender_id,
-    ).first()
+    existing = (
+        db.query(Bid)
+        .filter(
+            Bid.user_id == user_id,
+            Bid.tender_id == data.tender_id,
+        )
+        .first()
+    )
     if existing:
         raise HTTPException(status_code=400, detail="Tender already in pipeline")
 
@@ -81,27 +93,49 @@ def create_bid(
     return _enrich_bid(bid, db)
 
 
+@router.get("/{bid_id}", response_model=BidResponse)
+def get_bid(
+    bid_id: str,
+    db: Session = Depends(get_db),
+    user_id: str = Depends(get_current_user),
+):
+    """Fetch a single bid by id."""
+    bid = db.query(Bid).filter(Bid.id == bid_id, Bid.user_id == user_id).first()
+    if not bid:
+        raise HTTPException(status_code=404, detail="Bid not found")
+    return _enrich_bid(bid, db)
+
+
 @router.patch("/{bid_id}", response_model=BidResponse)
+@router.put("/{bid_id}", response_model=BidResponse)
 def update_bid(
     bid_id: str,
     data: BidUpdate,
     db: Session = Depends(get_db),
     user_id: str = Depends(get_current_user),
 ):
-    """Update bid stage or notes."""
-    bid = db.query(Bid).filter(
-        Bid.id == bid_id,
-        Bid.user_id == user_id,
-    ).first()
+    """Update a bid's stage, notes, and/or match score."""
+    bid = (
+        db.query(Bid)
+        .filter(
+            Bid.id == bid_id,
+            Bid.user_id == user_id,
+        )
+        .first()
+    )
     if not bid:
         raise HTTPException(status_code=404, detail="Bid not found")
 
-    if data.stage:
+    if data.stage is not None:
         if data.stage not in VALID_STAGES:
-            raise HTTPException(status_code=400, detail=f"Invalid stage. Must be one of: {VALID_STAGES}")
+            raise HTTPException(
+                status_code=400, detail=f"Invalid stage. Must be one of: {VALID_STAGES}"
+            )
         bid.stage = data.stage
     if data.notes is not None:
         bid.notes = data.notes
+    if data.match_score is not None:
+        bid.match_score = data.match_score
 
     db.commit()
     db.refresh(bid)
@@ -115,10 +149,14 @@ def delete_bid(
     user_id: str = Depends(get_current_user),
 ):
     """Remove a tender from the pipeline."""
-    bid = db.query(Bid).filter(
-        Bid.id == bid_id,
-        Bid.user_id == user_id,
-    ).first()
+    bid = (
+        db.query(Bid)
+        .filter(
+            Bid.id == bid_id,
+            Bid.user_id == user_id,
+        )
+        .first()
+    )
     if not bid:
         raise HTTPException(status_code=404, detail="Bid not found")
 
